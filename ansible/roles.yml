@@ -1,0 +1,4 @@
+- src: azavea.docker
+- src: azavea.pip
+- src: manala.apt
+- src: weareinteractive.ufw

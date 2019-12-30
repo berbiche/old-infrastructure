@@ -1,5 +1,10 @@
 ---
-hosts:
-  zion:
-    ansible_host: zion.tq.rs
-    ansible_user: automation
+all:
+  homelab:
+    hosts:
+      zion:
+        ansible_host: zion.tq.rs
+        ansible_user: automation
+  do:
+    hosts:
+      dozer:

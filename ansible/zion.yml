@@ -1,0 +1,10 @@
+---
+- hosts: zion
+  connection: ssh
+  become: True
+
+  roles:
+    - { role: manala.apt }
+    - { role: weareinteractive.ufw }
+    - { role: azavea.docker }
+    - { role: azavea.pip }
