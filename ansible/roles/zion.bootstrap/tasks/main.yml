@@ -13,7 +13,7 @@
     update_password: on_create
 
 - name: Add ssh public keys
-  authorized_keys:
+  authorized_key:
     user: "{{ zion_user['name'] }}"
     state: present
     key: "{{ item }}"
