@@ -1,10 +1,10 @@
 ---
-all:
-  homelab:
-    hosts:
-      zion:
-        ansible_host: zion.tq.rs
-        ansible_user: automation
-  do:
-    hosts:
-      dozer:
+homelab:
+  hosts:
+    zion:
+      ansible_host: ZION
+      ansible_user: automation
+      ansible_connection: ssh
+do:
+  hosts:
+    dozer:
