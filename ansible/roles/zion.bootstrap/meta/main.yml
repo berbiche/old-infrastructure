@@ -1,0 +1,4 @@
+---
+dependencies:
+  - { role: manala.apt }
+  - { role: azavea.pip }
