@@ -8,3 +8,8 @@
     - { role: weareinteractive.ufw }
     - { role: azavea.docker }
     - { role: azavea.pip }
+    - { role: zion.bootstrap }
+    - { role: zion.docker }
+    - { role: zion.dns }
+    - { role: zion.traefik }
+    - { role: zion.mediaserver }

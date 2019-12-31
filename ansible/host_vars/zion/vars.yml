@@ -1,35 +1,7 @@
 ---
-ufw_state: enabled
-ufw_logging: "on"
+login_banner: |
+  Property of Nicolas Berbiche, %d %t
+  OS\: %s' %m' %r' %v'
 
 apt-packages:
   - apt-transport-https
-
-cadvisor_docker_version: "v0.35.0"
-grafana_docker_version: "latest"
-jackett_docker_version: "latest"
-jellyfin_docker_version": "latest"
-lidarr_docker_version: "latest"
-ombi_docker_version: "latest"
-plex_docker_version: "latest"
-portainer_docker_version: ""
-prometheus_docker_version: "v2.15.0"
-radarr_docker_version: "preview"
-sonarr_docker_version: "preview"
-#tautulli_docker_version: "latest"
-traefik_docker_version: "1.7"
-
-mediaserver_folder: "/srv/mediaserver"
-plex_config_folder: "/srv/mediaserver/plex"
-rtorrent_config_folder: "/srv/mediaserver/deluge"
-jackett_config_folder: "/srv/mediaserver/jackett"
-sonarr_config_folder: "/srv/mediaserver/sonarr"
-radarr_config_folder: "/srv/mediaserver/radarr"
-lidarr_config_folder: "/srv/mediaserver/lidarr"
-jellyfin_config_folder: "/srv/mediaserver/jellyfin"
-
-plex_claim_token: "{{ vault_plex_claim_token }}"
-sonarr_api_key: "{{ vault_sonarr_api_key }}"
-radarr_api_key: "{{ vault_radarr_api_key }}"
-jackett_api_key: "{{ vault_jackett_api_key }}"
-jackett_admin_password: "{{ vault_jackett_admin_password }}"

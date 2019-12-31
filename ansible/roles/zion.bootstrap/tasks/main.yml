@@ -1,0 +1,66 @@
+---
+- name: Create my login user
+  user:
+    name: "{{ zion_user['name'] }}"
+    group: "{{ zion_user['name'] }}"
+    uid: "{{ zion_user['uid'] }}"
+    groups: "{{ zion_user['groups'] }}"
+    state: present
+    shell: "{{ zion_user['shell'] }}"
+    system: no
+    createhome: yes
+    home: "/home/{{ zion_user['name'] }}"
+    update_password: on_create
+
+- name: Add ssh public keys
+  authorized_keys:
+    user: "{{ zion_user['name'] }}"
+    state: present
+    key: "{{ item }}"
+  with_items: "{{ zion_authorized_keys }}"
+
+- name: Set APT sources to https
+  replace:
+    path: "{{ item }}"
+    regexp: "http://"
+    replace: "https://"
+    validate: apt-get update
+    backup: yes
+  with_fileglob:
+    - "/etc/apt/sources.list"
+    - "/etc/apt/sources.list.d/*"
+
+- name: Install packages
+  apt:
+    pkg:
+      - htop
+      - python
+      - python3
+      - python-pip
+      - python3-pip
+    state: present
+
+- name: Install python packages
+  pip:
+    name:
+      - docker
+      - requests
+      - docker-compose
+    state: present
+    executable: pip3
+
+- name: Add login banner
+  template:
+    src: issue.j2
+    dest: /etc/issue.net
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Enable login banner
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: "^#Banner\ *none"
+    replace: "Banner /etc/issue.net"
+    backup: yes
+  notify: reload sshd
