@@ -1,7 +1,6 @@
 ---
 login_banner: |
-  Property of Nicolas Berbiche, %d %t
-  OS\: %s' %m' %r' %v'
+  Property of Nicolas Berbiche <nicolas@normie.dev>
 
 apt-packages:
   - apt-transport-https

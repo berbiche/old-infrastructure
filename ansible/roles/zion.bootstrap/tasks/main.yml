@@ -8,7 +8,7 @@
     state: present
     shell: "{{ zion_user['shell'] }}"
     system: no
-    createhome: yes
+    create_home: yes
     home: "/home/{{ zion_user['name'] }}"
     update_password: on_create
 
