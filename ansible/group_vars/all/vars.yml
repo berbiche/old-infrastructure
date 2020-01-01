@@ -11,5 +11,4 @@ zion_user:
  
 zion_shell: /bin/bash
 zion_authorized_keys:
-  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALnT3KsTVEVPgDXhLlP1sdKM3M8q/1IRmcFP/vbEn/6 automation key"
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFHULTVEYcLyiNlaL2FqUvbBSGMcxXkZvVFGD2Dizp+H thiccpad for ZION"
