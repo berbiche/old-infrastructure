@@ -2,9 +2,12 @@
 homelab:
   hosts:
     zion:
-      ansible_host: ZION
+      ansible_host: hex.tq.rs
       ansible_user: automation
       ansible_connection: ssh
 do:
   hosts:
     dozer:
+      ansible_host: dozer.qt.rs
+      ansible_user: automation
+      ansible_connection: ssh
