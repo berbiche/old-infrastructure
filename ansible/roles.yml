@@ -1,4 +1,19 @@
-- src: azavea.docker
-- src: azavea.pip
-- src: manala.apt
-- src: weareinteractive.ufw
+- src: https://github.com/azavea/ansible-docker
+  name: azavea.docker
+  # v5.0.0
+  version: 0060f79b09fdfb35049976f85551c96336b91ac8
+
+- src: https://github.com/azavea/ansible-pip
+  name: azavea.pip
+  # v2.0.0
+  version: 5a6da0ff053c78a7cfe89b6721b92c9eeacbdde2
+
+- src: https://github.com/manala/ansible-role-apt
+  name: manala.apt
+  # v2.0.4
+  version: d0fcfeaa297f06a0996ccddb09335daad8ef9a8e
+
+- src: https://github.com/weareinteractive/ansible-ufw
+  name: weareinteractive.ufw
+  # v1.10.0
+  version: 69582c675dd7250e3f2361168cfdcaea3b9e8926
