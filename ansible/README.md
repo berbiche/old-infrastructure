@@ -17,3 +17,30 @@ Create the user:
 # SSH_AUTHORIZED_KEY=''
 # sudo -u automation tee -a /home/automation/.ssh/authorized_keys <<<$SSH_AUTHORIZED_KEY
 ```
+
+## Running
+
+The following command takes place in the project root:
+
+``` sh
+nix-shell shell.nix
+cd ansible
+```
+
+Install ansible-galaxy roles:
+
+``` sh
+ansible-galaxy install -r ./roles.yml
+```
+
+Run:
+
+``` sh
+ansible-playbook --diff zion.yml
+```
+
+Or check:
+
+``` sh
+ansible-playbook --check --diff zion.yml
+```
