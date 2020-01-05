@@ -1,4 +1,11 @@
 ---
+docker_version: "*"
+docker_compose_version: "1.25"
+
+docker_users:
+  - automation
+  - nicolas
+
 zion_user:
   uid: 1000
   gid: 1000
