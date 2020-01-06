@@ -1,0 +1,68 @@
+---
+- name: Install unbound dns server package
+  apt:
+    pkg:
+      - unbound
+    state: present
+
+- name: Copy unbound main configuration
+  template:
+    src: unbound.conf.j2
+    dest: /etc/unbound/unbound.conf
+    mode: 0644
+    owner: root
+    group: root
+    force: yes
+
+- name: Copy remaining unbound configurations
+  template:
+    src: "{{ item.name }}"
+    dest: "/etc/unbound/unbound.conf.d/{{ item.name.replace('.j2', '') }}"
+    mode: "{{ item.mode | default('0644')}}"
+  loop:
+    - { name:  }
+
+- name: Create unbound cache directory
+  file:
+    path: /var/cache/unbound
+    state: directory
+    owner: unbound
+    group: unbound
+    mode: 0755
+
+- name: Create unbound dnssec directory
+  file:
+    path: /var/lib/unbound
+    state: directory
+    owner: unbound
+    group: unbound
+    mode: 0755
+
+- name: Register unbound logrotate configuration
+  when: "'logrotate' in ansible_facts.packages"
+  block:
+    - name: Copy unbound logrotate configuration
+      template:
+        src: logrotate.conf.j2
+        dest: /etc/unbound/logrotate.conf
+        mode: 0644
+        owner: root
+        group: root
+        force: yes
+    - name: Validate unbound logrotate configuration
+      become: yes
+      become_user: root
+      command: /usr/sbin/logrotate -d /etc/unbound/logrotate.conf
+    - name: Load logrotate configuration
+      become: yes
+      become_user: root
+      command: /usr/sbin/logrotate /etc/unbound/logrotate.conf
+    - name: Reload logrotate
+      systemd:
+        name: logrotate
+        state: reloaded
+
+- name: Restart unbound dns
+  systemd:
+    name: unbound
+    state: reloaded

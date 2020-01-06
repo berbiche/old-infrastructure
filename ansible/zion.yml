@@ -10,6 +10,6 @@
     - { role: azavea.pip }
     - { role: zion.bootstrap }
     - { role: zion.docker }
-    - { role: zion.dns }
+    # - { role: zion.dns }
     - { role: zion.traefik }
     - { role: zion.mediaserver }

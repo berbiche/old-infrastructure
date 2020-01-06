@@ -1,0 +1,5 @@
+---
+- name: reload dns
+  systemd:
+    name: unbound
+    state: reloaded
