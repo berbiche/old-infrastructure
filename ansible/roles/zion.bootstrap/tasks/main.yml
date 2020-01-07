@@ -63,4 +63,5 @@
     regexp: "^#Banner\ *none"
     replace: "Banner /etc/issue.net"
     backup: yes
+    validate: /usr/sbin/sshd -t -f %s
   notify: reload sshd
