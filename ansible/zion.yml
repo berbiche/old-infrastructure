@@ -11,5 +11,5 @@
     - { role: zion.bootstrap }
     - { role: zion.docker }
     # - { role: zion.dns }
-    - { role: zion.traefik }
-    - { role: zion.mediaserver }
+    # - { role: zion.traefik }
+    # - { role: zion.mediaserver }

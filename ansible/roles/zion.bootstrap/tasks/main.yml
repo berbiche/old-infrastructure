@@ -20,15 +20,25 @@
   with_items: "{{ zion_authorized_keys }}"
 
 - name: Set APT sources to https
-  replace:
-    path: "{{ item }}"
-    regexp: "http://"
-    replace: "https://"
-    validate: apt-get update
-    backup: yes
-  with_fileglob:
-    - "/etc/apt/sources.list"
-    - "/etc/apt/sources.list.d/*"
+  block:
+    - name: Find all config files
+      register: apt_sources_list
+      find:
+        paths: /etc/apt
+        recurse: yes
+        file_type: file
+        patterns: "*.list"
+    - name: Replace http with https
+      replace:
+        path: "{{ item.path }}"
+        regexp: "http://"
+        replace: "https://"
+        # https://askubuntu.com/questions/65245/apt-get-update-only-for-a-specific-repository
+        validate: apt-get update -o Dir::Etc::sourcelist="%s"
+        backup: yes
+      loop: "{{ apt_sources_list.files }}"
+      loop_control:
+        label: "{{ item.path }}"
 
 - name: Install packages
   apt:
