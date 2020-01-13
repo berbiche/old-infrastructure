@@ -1,0 +1,6 @@
+{{ ansible_managed }}
+
+server:
+    # The following line will configure unbound to perform cryptographic
+    # DNSSEC validation using the root trust anchor.
+    auto-trust-anchor-file: "{{ unbound_lib_conf }}"

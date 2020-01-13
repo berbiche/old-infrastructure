@@ -5,26 +5,30 @@
       - unbound
     state: present
 
-- name: Copy unbound main configuration
+- name: Copy unbound configuration files
   template:
-    src: unbound.conf.j2
-    dest: /etc/unbound/unbound.conf
+    src: "{{ item }}"
+    dest: "{{ unbound_conf.d }}/{{ item.replace('.j2', '') }}"
     mode: 0644
     owner: root
     group: root
     force: yes
+  with_fileglob:
+    - "unbound.conf.d/*"
 
-- name: Copy remaining unbound configurations
+- name: Copy unbound main configuration file
   template:
-    src: "{{ item.name }}"
-    dest: "/etc/unbound/unbound.conf.d/{{ item.name.replace('.j2', '') }}"
-    mode: "{{ item.mode | default('0644')}}"
-  loop:
-    - { name:  }
+    src: unbound.conf.j2
+    dest: "{{ unbound_conf }}/unbound.conf"
+    mode: 0644
+    owner: root
+    group: root
+    force: yes
+    validate: /usr/sbin/unbound-checkconf -f %s
 
 - name: Create unbound cache directory
   file:
-    path: /var/cache/unbound
+    path: {{ unbound_cache }}
     state: directory
     owner: unbound
     group: unbound
@@ -32,7 +36,7 @@
 
 - name: Create unbound dnssec directory
   file:
-    path: /var/lib/unbound
+    path: {{ unbound_lib_conf }}
     state: directory
     owner: unbound
     group: unbound
@@ -44,7 +48,7 @@
     - name: Copy unbound logrotate configuration
       template:
         src: logrotate.conf.j2
-        dest: /etc/unbound/logrotate.conf
+        dest: "{{ unbound_conf }}/logrotate.conf"
         mode: 0644
         owner: root
         group: root
@@ -52,11 +56,11 @@
     - name: Validate unbound logrotate configuration
       become: yes
       become_user: root
-      command: /usr/sbin/logrotate -d /etc/unbound/logrotate.conf
+      command: "/usr/sbin/logrotate -d {{ unbound_conf }}/logrotate.conf"
     - name: Load logrotate configuration
       become: yes
       become_user: root
-      command: /usr/sbin/logrotate /etc/unbound/logrotate.conf
+      command: "/usr/sbin/logrotate {{ unbound_conf }}/logrotate.conf"
     - name: Reload logrotate
       systemd:
         name: logrotate

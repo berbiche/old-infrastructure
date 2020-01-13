@@ -1,0 +1,26 @@
+{{ ansible_managed }}
+
+server:
+    unblock-lan-zones: yes
+    insecure-lan-zones: yes
+
+    # Router
+    local-zone: "router.asus.com." redirect
+    local-data: "router.asus.com IN A 192.168.0.1"
+    local-data-ptr: "192.168.0.1 router.asus.com"
+
+    # *.tq.rs → 127.0.0.1
+    domain-insecure: "tq.rs"
+    private-domain: "tq.rs"
+    local-zone: "hex.tq.rs." always_transparent
+    local-zone: "tq.rs." redirect
+    local-data: "tq.rs IN A 192.168.0.3"
+    local-data-ptr: "192.168.0.3 tq.rs"
+    
+    # *.home and *.lan (192.168.0.0/24)
+    private-domain: "home"
+    private-domain: "lan"
+    domain-insecure: "home"
+    domain-insecure: "lan"
+    local-zone: "home." static
+    local-zone: "lan." static

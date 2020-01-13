@@ -1,0 +1,7 @@
+unbound_conf: "/etc/unbound"
+unbound_conf.d: "/etc/unbound/unbound.conf.d"
+unbound_cache: "/var/cache/unbound"
+unbound_lib_conf: "/var/lib/unbound"
+unbound_log: "/var/log/unbound"
+unbound_num_threads: 4
+unbound_control: "/usr/sbin/unbound-control"
