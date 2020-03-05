@@ -4,3 +4,21 @@ login_banner: |
 
 apt-packages:
   - apt-transport-https
+
+docker_is_ipv6: no
+docker_address_pool: "172.16.0.0/12"
+
+vpn_private_ip: 10.10.10.1
+wireguard_private_ip: {{ vpn_private_ip }}
+
+traefik_version: "traefik:1.7.20"
+traefik_config_folder: "/srv/traefik"
+traefik_logs_folder: "{{ traefik_config_folder }}/logs"
+traefik_docker_network: "web"
+traefik_admin_users:
+  - "nicolas:$2y$10$1kbYjcdCM5f1AccP0PmzZev.FiUJ/MsSXVGtPdlS/3Pl0RC9F.35."
+traefik_cert_main: "*.tq.rs"
+traefik_cert_sans:
+  - "tq.rs"
+
+letsencrypt_staging: False

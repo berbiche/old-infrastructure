@@ -2,6 +2,11 @@
 docker_version: "*"
 docker_compose_version: "1.25"
 
+cloudflare_api_email: "{{ vault_cloudflare_api_email }}"
+cloudflare_api_key: "{{ vault_cloudflare_api_key }}"
+
+letsencrypt_email: "{{ vault_letsencrypt_email }}"
+
 docker_users:
   - automation
   - nicolas

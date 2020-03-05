@@ -1,0 +1,11 @@
+---
+# Whether to use the Let's Encrypt staging environment
+letsencrypt_staging: True
+letsencrypt_email: ""
+traefik_cert_main: ""
+traefik_cert_sans: []
+traefik_admin_users: []
+traefik_docker_network: ""
+# Global variables
+docker_address_pool: ""
+wireguard_private_ip: ""

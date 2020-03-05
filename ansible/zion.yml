@@ -4,12 +4,12 @@
   become: True
 
   roles:
-    - { role: manala.apt }
+    - { role: manala.apt, tags: seeding }
     #- { role: weareinteractive.ufw }
-    - { role: azavea.docker }
-    - { role: azavea.pip }
-    - { role: zion.bootstrap }
-    - { role: zion.docker }
-    # - { role: zion.dns }
-    # - { role: zion.traefik }
-    # - { role: zion.mediaserver }
+    - { role: azavea.docker, tags: docker }
+    - { role: azavea.pip, tags: seeding }
+    - { role: zion.bootstrap, tags: seeding }
+    - { role: zion.docker, tags: docker }
+    # - { role: zion.dns, tags: dns }
+    - { role: zion.traefik, tags: [ reverse-proxy, web ] } #
+    # - { role: zion.mediaserver, tags: mediaserver }

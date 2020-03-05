@@ -1,0 +1,120 @@
+debug = false
+sendAnonymousUsage = false
+logLevel = "INFO"
+defaultEntryPoints = ["http", "https"]
+
+[traefikLog]
+  {# filePath = "/logs/traefik.log" #}
+  {# format = "json" #}
+
+[accessLog]
+  {# filePath = "/logs/access.log" #}
+  {# [accessLog.filters] #}
+  {#   statusCodes = ["400-600"] #}
+  {#   retryAttempts = true #}
+
+[api]
+  entryPoint = "dashboard"
+  dashboard = true
+
+[metrics]
+  [metrics.prometheus]
+    entryPoint = "metrics"
+
+{# [file] #}
+{#   directory = "rules" #}
+{#   watch = true #}
+
+[docker]
+  {# domain = "tq.rs" #}
+  watch = true
+  network = "{{ traefik_docker_network }}"
+  exposedByDefault = false
+  #usebindportip = true
+
+[entryPoints]
+  [entryPoints.http]
+    address = ":80"
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+      permanent = true
+  
+  [entryPoints.plex]
+    address = ":32400"
+    [entryPoints.plex.tls]
+
+  [entryPoints.https]
+    address = ":443"
+    {# # Disable compression until https://github.com/containous/traefik/issues/2576 is fixed #}
+    {# compress = true #}
+
+    {# [entryPoints.https.whiteList] #}
+    {#   # Restrict to internal network by default #}
+    {#   sourceRange = ["127.0.0.1", "172.16.0.0/12", "192.168.0.0/24", "10.10.10.1"] #}
+    {#   useXForwardedFor = true #}
+
+    {# [entryPoints.https.proxyProtocol] #}
+    {#   trustedIPs = ["10.10.10.1"] #}
+
+    [entryPoints.https.tls]
+      sniStrict = true
+      minVersion = "VersionTLS12"
+      cipherSuites = [
+        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA"
+      ]
+
+  [entryPoints.metrics]
+    address = ":8082"
+    # Whitelist Grafana to access traefik information
+    whitelistSourceRange = ["127.0.0.0/8", "{{ docker_address_pool }}"]
+
+  [entryPoints.dashboard]
+    address = ":8080"
+    [entryPoints.dashboard.whiteList]
+{% if vpn_private_ip %}
+      sourceRange = ["127.0.0.1", "{{ vpn_private_ip }}", "192.168.0.0/24"]
+{% else %}
+      sourceRange = ["127.0.0.1", "192.168.0.0/24"]
+{% endif %}
+    [entryPoints.dashboard.auth]
+      [entryPoints.dashboard.auth.basic]
+        users = {{ traefik_admin_users | to_json }}
+     
+
+# Automatic renewal of https certs with Let's Encrypt
+[acme]
+  email = "{{ letsencrypt_email }}"
+  storage = "/acme.json"
+  entryPoint = "https"
+
+  # Force using cloudflare/google resolvers because of private DNS
+  resolvers = ["1.1.1.1:53", "8.8.8.8:53"]
+
+  # Set the CA server to Let's Encrypt staging area for testing purposes
+{% if letsencrypt_staging %}
+  caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+{% else %}
+  caServer = "https://acme-v02.api.letsencrypt.org/directory"
+{% endif %}
+
+  # Allows the container to specify the host for which to renew the certificate
+  # Disabled because we have a SAN certificate and domains are not exposed
+  onHostRule = false
+
+# Uses DNS Challenge because f$ck videotron
+[acme.dnsChallenge]
+  provider = "cloudflare"
+  delayBeforeCheck = 5
+  # Force using external resolvers (i.e. cloudflare/google) because we run our own DNS
+  resolvers = ["1.1.1.1:53", "8.8.8.8:53"]
+
+[[acme.domains]]
+  main = "{{ traefik_cert_main }}"
+  sans = {{ traefik_cert_sans | to_json }}

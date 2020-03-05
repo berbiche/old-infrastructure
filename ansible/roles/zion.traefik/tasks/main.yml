@@ -1,0 +1,87 @@
+---
+### Restricting Traefik to a specific user does not restrict it's privilege
+### given it has access to the docker daemon
+
+- name: create traefik user and group
+- block:
+  - group:
+      name: traefik
+      state: present
+      system: yes
+  - user:
+      name: traefik
+      group: traefik
+      state: present
+      system: yes
+      create_home: no
+      update_password: on_create
+      password: '!'
+
+- name: Create Traefik configuration directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - {{ traefik_config_folder }}
+    - {{ traefik_logs_folder }}
+
+- name: Copy Traefik configuration
+  template:
+    src: traefik.toml.j2
+    dest: "{{ traefik_config_folder }}/traefik.toml"
+    mode: 0400
+    owner: root
+    group: root
+
+- name: Create Traefik docker network
+  docker_network:
+    name: "{{ traefik_docker_network }}"
+    state: present
+    # attachable: yes
+    # scope: global
+    ## Not supported
+    # enable_ipv6: "{{ docker_is_ipv6 }}"
+
+- name: Register Traefik logrotate configuration
+  when: "'logrotate' in ansible_facts.packages"
+  block:
+    - name: Copy Traefik logrotate configuration
+      template:
+        src: logrotate.conf.j2
+        dest: "{{ traefik_config_folder }}/logrotate.conf"
+        mode: 0644
+        owner: root
+        group: root
+        force: yes
+    - name: Validate Traefik logrotate configuration
+      become: yes
+      become_user: root
+      command: "/usr/sbin/logrotate -d {{ traefik_config_folder }}/logrotate.conf"
+    - name: Load logrotate configuration
+      become: yes
+      become_user: root
+      command: "/usr/sbin/logrotate {{ traefik_config_folder }}/logrotate.conf"
+    - name: Reload logrotate
+      systemd:
+        name: logrotate
+        state: reloaded
+
+- name: Create empty ACME file for Traefik
+  file:
+    state: touch
+    path: "{{ traefik_config_folder }}/acme.json"
+    owner: traefik
+    group: traefik
+    mode: 0600
+   
+- name: Copy Traefik docker-compose
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ traefik_config_folder }}/docker-compose.yml"
+    mode: 0400
+    owner: root
+    group: root
+  notify: Reload Traefik

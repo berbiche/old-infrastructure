@@ -1,0 +1,69 @@
+---
+version: '3.7'
+
+services:
+  traefik:
+    image: '{{ traefik_version }}'
+    container_name: traefik
+    restart: always
+    environment:
+      # Let's Encrypt cloudflare provider
+      CF_API_EMAIL: '{{ cloudflare_api_email }}'
+      CF_API_KEY: '{{ cloudflare_api_key }}'
+    domainname: '{{ ansible_facts['domain'] }}'
+    {# Network mode has to be host to have the right ip address #}
+    network_mode: host
+    ports:
+      - '0.0.0.0:80:80'
+      - '0.0.0.0:443:443'
+      - '0.0.0.0:32400:32400'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.toml:/traefik.toml
+      - ./rules:/rules
+      - ./acme.json:/acme.json
+      - ./logs:/logs
+    labels:
+      traefik.enable: true
+      traefik.dashboard.backend: traefik
+      traefik.dashboard.frontend.rule: 'Host: traefik.{{ ansible_facts['domain'] }}'
+      traefik.dashboard.port: 8080
+      {# Only accessible from private network #}
+      traefik.dashboard.frontend.whiteList.sourceRange: '127.0.0.1, {{ wireguard_private_ip }}, 192.168.0.0/24'
+      traefik.dashboard.frontend.whiteList.XForwardedFor: true
+      {# Security headers #}
+      traefik.dashboard.frontend.headers.frameDeny: true
+      traefik.dashboard.frontend.headers.browserXSSFilter: true
+      traefik.dashboard.frontend.headers.isDevelopment: false
+      traefik.dashboard.frontend.headers.forceSTSHeader: true
+      traefik.dashboard.frontend.headers.STSPreload: true
+      traefik.dashboard.frontend.headers.STSSeconds: 31536000
+      traefik.dashboard.frontend.headers.referrerPolicy: same-origin
+      {# End security headers #}
+
+  whoami:
+    image: containous/whoami
+    container_name: whoami
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+      traefik.docker.network: '{{ traefik_docker_network }}'
+      traefik.backend: whoami
+      traefik.frontend.rule: 'Host: whoami.{{ ansible_facts['domain'] }}'
+      # Only accessible from private network
+      traefik.frontend.whiteList.sourceRange: '127.0.0.1, {{ wireguard_private_ip }}, 192.168.0.0/24'
+      # Security headers
+      traefik.frontend.headers.frameDeny: true
+      traefik.frontend.headers.browserXSSFilter: true
+      traefik.frontend.headers.isDevelopment: false
+      traefik.frontend.headers.forceSTSHeader: true
+      traefik.frontend.headers.STSPreload: true
+      traefik.frontend.headers.STSSeconds: 31536000
+      traefik.frontend.headers.referrerPolicy: same-origin
+      # End security headers
+    networks:
+      - {{ traefik_docker_network }}
+
+networks:
+  {{ traefik_docker_network }}:
+    external: true
