@@ -108,7 +108,7 @@ defaultEntryPoints = ["http", "https"]
   # Disabled because we have a SAN certificate and domains are not exposed
   onHostRule = false
 
-# Uses DNS Challenge because f$ck videotron
+# Uses DNS Challenge
 [acme.dnsChallenge]
   provider = "cloudflare"
   delayBeforeCheck = 5
