@@ -1,0 +1,14 @@
+authelia_config_directory: "/srv/authelia"
+
+# The base domain to set the cookie on.
+# All subdomains will share the cookie.
+authelia_base_domain: "{{ ansible_facts['domain'] }}"
+
+authelia_session_secret:
+
+authelia_stmp_enable: no
+authelia_smtp_username: "invalid"
+authelia_smtp_password: "invalid"
+authelia_smtp_host: "example.com"
+authelia_smtp_port: "587"
+authelia_smtp_sender: "invalid@example.com"

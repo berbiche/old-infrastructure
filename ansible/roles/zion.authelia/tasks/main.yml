@@ -1,0 +1,16 @@
+---
+- name: Create Authelia user and group
+  block:
+    - group:
+        name: authelia
+        system: yes
+    - user:
+        name: authelia
+        system: yes
+        password: "!"
+
+- name: Create Authelia configuration directory
+  file:
+    dest: "{{ authelia_config_directory }}"
+    state: directory
+    user: authelia

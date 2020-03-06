@@ -1,0 +1,7 @@
+notifier:
+  stmp:
+    username: "{{ authelia_smtp_username }}"
+    password: "{{ authelia_smtp_password }}"
+    host: "{{ authelia_smtp_host }}"
+    port: "{{ authelia_smtp_port }}"
+    sender: "{{ authelia_smtp_sender }}"
