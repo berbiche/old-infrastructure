@@ -27,7 +27,7 @@ nix-shell shell.nix
 cd ansible
 ```
 
-Install ansible-galaxy roles:
+Install ansible-galaxy roles (on the current host):
 
 ``` sh
 ansible-galaxy install -r ./roles.yml
@@ -36,11 +36,11 @@ ansible-galaxy install -r ./roles.yml
 Run:
 
 ``` sh
-ansible-playbook --diff zion.yml
+ansible-playbook --vault-password-file FILE --diff zion.yml
 ```
 
 Or check:
 
 ``` sh
-ansible-playbook --check --diff zion.yml
+ansible-playbook --vault-password-file FILE --check --diff zion.yml
 ```
