@@ -1,0 +1,45 @@
+---
+- name: restart plex
+  docker_compose:
+    project_src: "{{ mediaserver_folder }}"
+    files: docker-compose.yml
+    state: present
+    restarted: yes
+    services:
+      - plex
+
+- name: restart radarr
+  docker_compose:
+    project_src: "{{ mediaserver_folder }}"
+    files: docker-compose.yml
+    state: present
+    restarted: yes
+    services:
+      - radarr
+
+- name: restart sonarr
+  docker_compose:
+    project_src: "{{ mediaserver_folder }}"
+    files: docker-compose.yml
+    state: present
+    restarted: yes
+    services:
+      - sonarr
+
+- name: restart jackett
+  docker_compose:
+    project_src: "{{ mediaserver_folder }}"
+    files: docker-compose.yml
+    state: present
+    restarted: yes
+    services:
+      - jackett
+
+- name: restart rtorrent
+  docker_compose:
+    project_src: "{{ mediaserver_folder }}"
+    files: docker-compose.yml
+    state: present
+    restarted: yes
+    services:
+      - rtorrent

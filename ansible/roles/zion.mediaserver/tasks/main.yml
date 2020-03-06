@@ -1,0 +1,85 @@
+---
+- name: Create mediaserver group
+  group:
+    name: mediaserver
+    state: present
+    gid: 950
+
+- name: Create mediaserver user
+  user:
+    name: mediaserver
+    state: present
+    password: "!"
+    update_password: on_create
+    group: mediaserver
+    uid: 950
+    system: yes
+    create_home: yes
+    shell: /bin/bash
+    home: /home/mediaserver
+
+- name: Create the mediaserver configuration folders
+  file:
+    name: "{{ item.value }}"
+    state: directory
+    owner: mediaserver
+    group: mediaserver
+    mode: 0770
+  loop: "{{ mediaserver_folders | dict2items }}"
+
+- name: Install the sonarr config
+  template:
+    src: "sonarr.j2"
+    dest: "{{ mediaserver_folders['sonarr'] }}/sonarr/config.xml"
+    mode: 0660
+    owner: mediaserver
+    group: mediaserver
+  notify: restart sonarr
+
+- name: Install the radarr config
+  template:
+    src: "radarr.j2"
+    dest: "{{ mediaserver_folders['radarr'] }}/radarr/config.xml"
+    mode: 0660
+    owner: mediaserver
+    group: mediaserver
+  notify: restart radarr
+
+- name: Install the plex config
+  template:
+    src: "plex.xml.j2"
+    dest: "{{ mediaserver_folders['plex'] }}/plex/config.xml"
+    mode: 0440
+    owner: mediaserver
+    group: mediaserver
+  notify: restart plex
+
+- name: Install the ombi config
+  template:
+    src: "ombi.conf.j2"
+
+- name: Install the production compose file
+  template:
+    src: "docker-compose.yml.j2"
+    dest: "{{ mediaserver_folders['mediaserver'] }}/docker-compose.yml"
+    mode: 0440
+    owner: mediaserver
+    group: mediaserver
+
+- name: Create the mediaserver docker network
+  docker_network:
+    name: mediaserver
+    state: present
+
+- name: Update the docker service
+  docker_compose:
+    project_name: mediaserver
+    project_src: "{{ mediaserver_folders['mediaserver'] }}"
+    files: docker-compose.yml
+    state: present
+    # Recreate only when service definition has changed (in docker-compose.yml?)
+    recreate: smart
+    # Pull latest image
+    pull: yes
+    # Removes containers not defined in the docker-compose
+    remove_orphans: yes

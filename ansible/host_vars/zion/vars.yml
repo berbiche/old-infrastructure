@@ -2,5 +2,44 @@
 login_banner: |
   Property of Nicolas Berbiche <nicolas@normie.dev>
 
+ufw_state: enabled
+ufw_logging: "on"
+
 apt-packages:
   - apt-transport-https
+
+# For use with traefik to allow only certain IPs to access
+private_network_traefik: "127.0.0.1, 10.10.10.1, 172.16.0.0/12, 192.168.0.0/24"
+
+cadvisor_docker_version: "v0.35.0"
+grafana_docker_version: "latest"
+jackett_docker_version: "latest"
+jellyfin_docker_version: "latest"
+lidarr_docker_version: "latest"
+ombi_docker_version: "latest"
+plex_docker_version: "latest"
+portainer_docker_version: "latest"
+prometheus_docker_version: "v2.15.0"
+radarr_docker_version: "preview"
+rtorrent_docker_version: "latest"
+sonarr_docker_version: "preview"
+tautulli_docker_version: "latest"
+traefik_docker_version: "1.7"
+
+mediaserver_folders:
+  mediaserver: "/srv/mediaserver"
+  plex:        "/srv/mediaserver/plex"
+  jackett:     "/srv/mediaserver/jackett"
+  sonarr:      "/srv/mediaserver/sonarr"
+  radarr:      "/srv/mediaserver/radarr"
+  lidarr:      "/srv/mediaserver/lidarr"
+  jellyfin:    "/srv/mediaserver/jellyfin"
+  rtorrent:    "/srv/mediaserver/rtorrent"
+
+rtorrent_port: 31336
+
+plex_claim_token: "{{ vault_plex_claim_token }}"
+sonarr_api_key: "{{ vault_sonarr_api_key }}"
+radarr_api_key: "{{ vault_radarr_api_key }}"
+jackett_api_key: "{{ vault_jackett_api_key }}"
+jackett_admin_password: "{{ vault_jackett_admin_password }}"

@@ -12,4 +12,4 @@
     - { role: zion.docker }
     # - { role: zion.dns }
     - { role: zion.traefik }
-    - { role: zion.mediaserver }
+    # - { role: zion.mediaserver }

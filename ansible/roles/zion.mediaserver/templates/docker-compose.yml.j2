@@ -1,0 +1,436 @@
+{% macro security_headers() %}
+      - traefik.frontend.headers.frameDeny: true
+      - traefik.frontend.headers.browserXSSFilter: true
+      - traefik.frontend.headers.isDevelopment: false
+      - traefik.frontend.headers.forceSTSHeader: true
+      - traefik.frontend.headers.STSPreload: true
+      - traefik.frontend.headers.STSSeconds: 31536000
+      - traefik.frontend.headers.referrerPolicy: same-origin
+{%- endmacro %}
+
+---
+version: '3.7'
+
+services:
+  rtorrent:
+    image: wonderfall/rtorrent-flood@sha256:225f0828a00b0cefbe1fd362c8e663a1eaf65eec066673693e2a6b6ff3f81ac0
+    container_name: rtorrent
+    restart: unless-stopped
+    networks:
+      - mediaserver
+    # Don't forget to allow the port in the firewall
+    ports:
+      - '{{ rtorrent_port }}:49184/tcp'
+      - '{{ rtorrent_port }}:49184/udp'
+    expose:
+      - 3000
+    depends_on:
+      - rtorrent-nginx
+    # Required because of a weird bug
+    tty: true
+    environment:
+      - 'UID=${PUID:?Environment variable PUID not provided}'
+      - 'GID=${PGID:?Environment variable PGID not provided}'
+      - 'TZ=${TZ:?Environment variable TZ not provided}'
+      - 'UMASK=${UMASK:?Environment variable UMASK not provided}'
+      - 'FLOOD_SECRET=${FLOOD_SECRET:?Environment variable FLOOD_SECRET not provided}'
+      - RTORRENT_SCGI=5000
+      - WEBROOT=/rtorrent
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      # rtorrent flood configuration database
+      - flood-db:/flood-db
+      # Folder where rtorrent initially saves it's stuff
+      - ${DOWNLOAD_LOCATION}:/data
+      # Folder where stuff is moved afterwards
+      - ${PERMANENT_LOCATION}:/mediaserver
+      # rtorrent's Configuration
+      - ./rtorrent/rtorrent.rc:/home/torrent/.rtorrent.rc:rw
+      - ./rtorrent/config.d/:/home/torrent/rtorrent/config.d:rw
+      - ./rtorrent/logs:/home/torrent/rtorrent/logs:rw
+    labels:
+      traefik.enable: true
+      traefik.backend: rtorrent
+      traefik.port: 3000
+      traefik.frontend.rule: 'Host: rtorrent.tq.rs'
+      traefik.docker.network: mediaserver
+      # Only accessible from private network
+      traefik.frontend.whiteList.sourceRange: "{{ private_network_traefik }}"
+      traefik.frontend.whiteList.XForwardedFor: true
+      {{ security_headers()|indent(6) }}
+      # Security headers
+
+  # Reverse proxy for the XMLRPC endpoint of rTorrent
+  # Communication with the endpoint is done on port 80
+  rtorrent-nginx:
+    image: nginx
+    container_name: rtorrent-nginx
+    restart: unless-stopped
+    command: /bin/bash -c "envsubst < /etc/nginx/conf.d/rtorrent.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+    networks:
+      mediaserver:
+        aliases:
+          - nginx
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./nginx.conf:/etc/nginx/conf.d/rtorrent.template:ro
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.backend=rtorrent-nginx'
+      - 'traefik.port=80'
+      - 'traefik.frontend.rule=Host: media.tq.rs; PathPrefixStrip: /RPC2'
+      - 'traefik.docker.network=mediaserver'
+      # Only accessible from private network
+      - 'traefik.frontend.whiteList.sourceRange=127.0.0.1, 172.16.0.0/12'
+      - 'traefik.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.frontend.headers.frameDeny=true'
+      - 'traefik.frontend.headers.browserXSSFilter=true'
+      - 'traefik.frontend.headers.isDevelopment=false'
+      - 'traefik.frontend.headers.forceSTSHeader=true'
+      - 'traefik.frontend.headers.STSPreload=true'
+      - 'traefik.frontend.headers.STSSeconds=31536000'
+      - 'traefik.frontend.headers.referrerPolicy=same-origin'
+      # End security headers
+
+  jackett:
+    image: linuxserver/jackett:latest
+    container_name: jackett
+    restart: unless-stopped
+    networks:
+      - mediaserver
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=${UMASK}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./jackett:/config
+      - ${PERMANENT_LOCATION}:/mediaserver
+      - ${JACKETT_BLACKHOLE}:/downloads
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.backend=jackett'
+      - 'traefik.port=9117'
+      - 'traefik.frontend.rule=Host: media.tq.rs; PathPrefix: /jackett'
+      - 'traefik.docker.network=mediaserver'
+      # Only accessible from private network
+      - 'traefik.frontend.whiteList.sourceRange=127.0.0.1, 10.10.10.1, 172.16.0.0/12, 192.168.0.0/24'
+      - 'traefik.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.frontend.headers.frameDeny=true'
+      - 'traefik.frontend.headers.browserXSSFilter=true'
+      - 'traefik.frontend.headers.isDevelopment=false'
+      - 'traefik.frontend.headers.forceSTSHeader=true'
+      - 'traefik.frontend.headers.STSPreload=true'
+      - 'traefik.frontend.headers.STSSeconds=31536000'
+      - 'traefik.frontend.headers.referrerPolicy=same-origin'
+      # End security headers
+
+  sonarr:
+    image: linuxserver/sonarr:preview
+    container_name: sonarr
+    restart: unless-stopped
+    networks:
+      - mediaserver
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=${UMASK}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./sonarr:/config
+      - ${PERMANENT_LOCATION}:/mediaserver
+      - ${PERMANENT_LOCATION}/tv:/tv
+      - ${DOWNLOAD_LOCATION}:/downloads
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.backend=sonarr'
+      - 'traefik.port=8989'
+      - 'traefik.frontend.rule=Host: media.tq.rs; PathPrefix: /sonarr'
+      - 'traefik.docker.network=mediaserver'
+      # Only accessible from private network
+      - 'traefik.frontend.whiteList.sourceRange=127.0.0.1, 10.10.10.1, 172.16.0.0/12, 192.168.0.0/24, 142.137.168.79'
+      - 'traefik.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.frontend.headers.frameDeny=true'
+      - 'traefik.frontend.headers.browserXSSFilter=true'
+      - 'traefik.frontend.headers.isDevelopment=false'
+      - 'traefik.frontend.headers.forceSTSHeader=true'
+      - 'traefik.frontend.headers.STSPreload=true'
+      - 'traefik.frontend.headers.STSSeconds=31536000'
+      - 'traefik.frontend.headers.referrerPolicy=same-origin'
+      # End security headers
+
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    networks:
+      - mediaserver
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=${UMASK}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./radarr:/config
+      - ${PERMANENT_LOCATION}:/mediaserver
+      - ${PERMANENT_LOCATION}/movies:/movies
+      - ${DOWNLOAD_LOCATION}:/downloads
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.backend=radarr'
+      - 'traefik.port=7878'
+      - 'traefik.frontend.rule=Host: media.tq.rs; PathPrefix: /radarr'
+      - 'traefik.docker.network=mediaserver'
+      # Only accessible from private network
+      - 'traefik.frontend.whiteList.sourceRange=127.0.0.1, 10.10.10.1, 172.16.0.0/12, 192.168.0.0/24'
+      - 'traefik.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.frontend.headers.frameDeny=true'
+      - 'traefik.frontend.headers.browserXSSFilter=true'
+      - 'traefik.frontend.headers.isDevelopment=false'
+      - 'traefik.frontend.headers.forceSTSHeader=true'
+      - 'traefik.frontend.headers.STSPreload=true'
+      - 'traefik.frontend.headers.STSSeconds=31536000'
+      - 'traefik.frontend.headers.referrerPolicy=same-origin'
+      # End security headers
+
+  lidarr:
+    image: linuxserver/lidarr:preview
+    container_name: lidarr
+    restart: unless-stopped
+    networks:
+      - mediaserver
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=${UMASK}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./lidarr:/config
+      - '${PERMANENT_LOCATION}:/mediaserver'
+      - '${PERMANENT_LOCATION}/music:/music'
+      - '${DOWNLOAD_LOCATION}:/downloads'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.backend=lidarr'
+      - 'traefik.port=8686'
+      - 'traefik.frontend.rule=Host: media.tq.rs; PathPrefix: /lidarr'
+      - 'traefik.docker.network=mediaserver'
+      # Only accessible from private network
+      - 'traefik.frontend.whiteList.sourceRange=127.0.0.1, 10.10.10.1, 172.16.0.0/12, 192.168.0.0/24'
+      - 'traefik.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.frontend.headers.frameDeny=true'
+      - 'traefik.frontend.headers.browserXSSFilter=true'
+      - 'traefik.frontend.headers.isDevelopment=false'
+      - 'traefik.frontend.headers.forceSTSHeader=true'
+      - 'traefik.frontend.headers.STSPreload=true'
+      - 'traefik.frontend.headers.STSSeconds=31536000'
+      - 'traefik.frontend.headers.referrerPolicy=same-origin'
+      # End security headers
+
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    ports:
+      - '8096:80'
+    networks:
+      - mediaserver
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    devices:
+      # Mount the GPU for hardware decoding
+      - /dev/dri:/dev/dri
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./jellyfin:/config
+      - ${PERMANENT_LOCATION}:/mediaserver
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.backend=jellyfin'
+      - 'traefik.port=80'
+      - 'traefik.protocol=http'
+      - 'traefik.frontend.rule=Host: jellyfin.tq.rs'
+      - 'traefik.docker.network=mediaserver'
+      # Only accessible from private network
+      - 'traefik.frontend.whiteList.sourceRange=127.0.0.1, 10.10.10.1, 172.16.0.0/12, 192.168.0.0/24'
+      - 'traefik.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.frontend.headers.frameDeny=true'
+      - 'traefik.frontend.headers.browserXSSFilter=true'
+      - 'traefik.frontend.headers.isDevelopment=false'
+      - 'traefik.frontend.headers.forceSTSHeader=true'
+      - 'traefik.frontend.headers.STSPreload=true'
+      - 'traefik.frontend.headers.STSSeconds=31536000'
+      - 'traefik.frontend.headers.referrerPolicy=same-origin'
+      # End security headers
+
+  plex:
+    image: linuxserver/plex:latest
+    container_name: plex
+    restart: unless-stopped
+    #hostname: plex.tq.rs
+    #network_mode: 'host'
+    networks:
+      - web
+    #ports:
+    #  - '32400:32400'
+    #  - '32400:32400/udp'
+    #  - '32469:32469'
+    #  - '32469:32469/udp'
+    #  - '5353:5353/udp'
+    #  - '1900:1900/udp'
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - VERSION=docker
+    #networks:
+      #- mediaserver
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - '${PLEX_CONFIG_LOCATION}:/config'
+      - '${PERMANENT_LOCATION}:/mediaserver'
+      - '${PERMANENT_LOCATION}:/data'
+      - '${TRANSCODE_LOCATION}:/transcode'
+    labels:
+      traefik.enable: true
+      traefik.plex.port: 32400
+      traefik.plex.frontend.rule: 'Host: plex.tq.rs'
+      traefik.plex.frontend.entryPoints: 'plex,http,https'
+      traefik.plex.backend: plex
+      # Publicly exposed
+      traefik.plex.frontend.whiteList.sourceRange: 0.0.0.0/0
+      traefik.plex.frontend.whiteList.XForwardedFor: true
+      # Security headers
+      traefik.plex.frontend.headers.frameDeny: true
+      traefik.plex.frontend.headers.browserXSSFilter: true
+      traefik.plex.frontend.headers.contentTypeNosniff: true
+      traefik.plex.frontend.headers.featurePolicy: "geolocation ''none''; midi ''none''; notifications ''none''; push ''none''; sync-xhr ''none''; microphone ''none''; camera ''none''; magnetometer ''none''; gyroscope ''none''; speaker ''self''; vibrate ''none''; fullscreen ''self''; payment ''none''; always;"
+      traefik.plex.frontend.headers.customResponseHeaders: "X-Robots-Tagnoindex,nofollow,nosnippet,noarchive,notranslate,noimageindex"
+      traefik.plex.frontend.headers.isDevelopment: false
+      traefik.plex.frontend.headers.forceSTSHeader: true
+      traefik.plex.frontend.headers.STSPreload: true
+      traefik.plex.frontend.headers.STSSeconds: 31536000
+      traefik.plex.frontend.headers.referrerPolicy: same-origin
+      # End security headers
+      traefik.plex.frontend.priority: 100
+
+      traefik.webtools.port: 33400
+      traefik.webtools.backend: 'plex-webtools'
+      traefik.webtools.frontend.rule: 'Host: plex.tq.rs; PathPrefix: /webtools'
+      traefik.webtools.frontend.whiteList.sourceRange: 0.0.0.0/0
+      traefik.webtools.frontend.whiteList.XForwardedFor: true
+      traefik.webtools.frontend.headers.frameDeny: true
+      traefik.webtools.frontend.headers.browserXSSFilter: true
+      traefik.webtools.frontend.headers.isDevelopment: false
+      traefik.webtools.frontend.headers.forceSTSHeader: true
+      traefik.webtools.frontend.headers.STSPreload: true
+      traefik.webtools.frontend.headers.STSSeconds: 31536000
+      traefik.webtools.frontend.headers.referrerPolicy: same-origin
+      traefik.webtools.frontend.priority: 200
+
+  tautulli:
+    image: linuxserver/tautulli:latest
+    container_name: tautulli
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    networks:
+      - mediaserver
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./tautulli:/config
+      - '${PLEX_LOGS_LOCATION}:/logs:ro'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.backend=tautulli'
+      - 'traefik.port=8181'
+      - 'traefik.t.frontend.redirect.regex=^https?://media.tq.rs/?$$'
+      - 'traefik.t.frontend.redirect.replacement=https://media.tq.rs/t'
+      - 'traefik.t.frontend.rule=Host: media.tq.rs'
+      - 'traefik.t.frontend.priority=1'
+      # Only accessible from private network
+      - 'traefik.t.frontend.whiteList.sourceRange=127.0.0.1, 10.10.10.1, 172.16.0.0/12, 192.168.0.0/24'
+      - 'traefik.t.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.t.frontend.headers.frameDeny=true'
+      - 'traefik.t.frontend.headers.browserXSSFilter=true'
+      - 'traefik.t.frontend.headers.isDevelopment=false'
+      - 'traefik.t.frontend.headers.forceSTSHeader=true'
+      - 'traefik.t.frontend.headers.STSPreload=true'
+      - 'traefik.t.frontend.headers.STSSeconds=31536000'
+      - 'traefik.t.frontend.headers.referrerPolicy=same-origin'
+      # End security headers
+      # Allow access to newsletter publicly
+      - 'traefik.public.frontend.rule=Host: media.tq.rs; PathPrefix: /t/newsletter,/t/image'
+      - 'traefik.public.frontend.priority=50'
+      # Accessible from public network
+      - 'traefik.public.frontend.whiteList.sourceRange=0.0.0.0/0'
+      - 'traefik.public.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.public.frontend.headers.frameDeny=true'
+      - 'traefik.public.frontend.headers.browserXSSFilter=true'
+      - 'traefik.public.frontend.headers.isDevelopment=false'
+      - 'traefik.public.frontend.headers.forceSTSHeader=true'
+      - 'traefik.public.frontend.headers.STSPreload=true'
+      - 'traefik.public.frontend.headers.STSSeconds=31536000'
+      - 'traefik.public.frontend.headers.referrerPolicy=same-origin'
+
+  ombi:
+    image: linuxserver/ombi:latest
+    container_name: ombi
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - BASE_URL=/ombi
+    networks:
+      - mediaserver
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./ombi:/config
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.backend=ombi'
+      - 'traefik.port=3579'
+      - 'traefik.frontend.rule=Host: plex.tq.rs; PathPrefix: /ombi'
+      - 'traefik.frontend.priority=200'
+      # Only accessible from private network
+      - 'traefik.frontend.whiteList.sourceRange=127.0.0.1, 10.10.10.1, 172.16.0.0/12, 192.168.0.0/24'
+      - 'traefik.frontend.whiteList.XForwardedFor=true'
+      # Security headers
+      - 'traefik.frontend.headers.frameDeny=true'
+      - 'traefik.frontend.headers.browserXSSFilter=true'
+      - 'traefik.frontend.headers.isDevelopment=false'
+      - 'traefik.frontend.headers.forceSTSHeader=true'
+      - 'traefik.frontend.headers.STSPreload=true'
+      - 'traefik.frontend.headers.STSSeconds=31536000'
+      - 'traefik.frontend.headers.referrerPolicy=same-origin'
+      # End security headers
+
+
+volumes:
+  flood-db:
+
+networks:
+  mediaserver:
+    external: true
+  web:
+    external: true
