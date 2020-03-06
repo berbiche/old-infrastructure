@@ -1,4 +1,4 @@
 ---
-dependencies:
-  - { role: azavea.docker }
-  - { role: azavea.pip }
+# dependencies:
+#   - { role: azavea.docker }
+#   - { role: azavea.pip }
