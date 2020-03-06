@@ -53,11 +53,12 @@
 - name: Install python packages
   pip:
     name:
-      - docker
       - requests
+      - docker
       - docker-compose
+      - pyyaml
     state: present
-    executable: pip3
+    executable: pip2
 
 - name: Add login banner
   template:
