@@ -30,7 +30,11 @@ services:
       traefik.dashboard.frontend.rule: 'Host: traefik.{{ ansible_facts['domain'] }}'
       traefik.dashboard.port: 8080
       {# Only accessible from private network #}
+{% if vpn_private_ip %}
       traefik.dashboard.frontend.whiteList.sourceRange: '127.0.0.1, {{ vpn_private_ip }}, 192.168.0.0/24'
+{% else %}
+      traefik.dashboard.frontend.whiteList.sourceRange: '127.0.0.1, 192.168.0.0/24'
+{% endif %}
       traefik.dashboard.frontend.whiteList.XForwardedFor: true
       {# Security headers #}
       traefik.dashboard.frontend.headers.frameDeny: true
@@ -52,7 +56,11 @@ services:
       traefik.backend: whoami
       traefik.frontend.rule: 'Host: whoami.{{ ansible_facts['domain'] }}'
       # Only accessible from private network
+{% if vpn_private_ip %}
       traefik.frontend.whiteList.sourceRange: '127.0.0.1, {{ vpn_private_ip }}, 192.168.0.0/24'
+{% else %}
+      traefik.frontend.whiteList.sourceRange: '127.0.0.1, 192.168.0.0/24'
+{% endif %}
       # Security headers
       traefik.frontend.headers.frameDeny: true
       traefik.frontend.headers.browserXSSFilter: true
