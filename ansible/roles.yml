@@ -17,3 +17,8 @@
   name: weareinteractive.ufw
   # v1.10.0
   version: 69582c675dd7250e3f2361168cfdcaea3b9e8926
+
+- src: https://github.com/nickjj/ansible-docker
+  name: nickjj.docker
+  # v1.9.2 + patches
+  version: fc2cf2e89a50aa2329682525156468cf8c9da117
