@@ -84,4 +84,4 @@
     mode: 0400
     owner: root
     group: root
-  notify: Reload Traefik
+  notify: reload traefik

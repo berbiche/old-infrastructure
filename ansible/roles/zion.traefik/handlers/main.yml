@@ -1,6 +1,6 @@
 ---
-- name: Reload Traefik
-  docker_compose:
+- name: reload traefik
+  docker_service:
     project_name: traefik
     project_src: "{{ traefik_config_folder }}"
     files:
