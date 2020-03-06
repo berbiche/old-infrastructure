@@ -9,7 +9,7 @@ docker_is_ipv6: no
 docker_address_pool: "172.16.0.0/12"
 
 vpn_private_ip: 10.10.10.1
-wireguard_private_ip: {{ vpn_private_ip }}
+wireguard_private_ip: "{{ vpn_private_ip }}"
 
 traefik_version: "traefik:1.7.20"
 traefik_config_folder: "/srv/traefik"
