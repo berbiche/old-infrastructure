@@ -10,6 +10,7 @@
     - { role: zion.bootstrap, tags: seeding }
     - { role: zion.docker, tags: docker }
     - { role: nickjj.docker, tags: [ docker, seeding ] }
+    - { role: zion.facts }
     # - { role: zion.dns, tags: dns }
     - { role: zion.traefik, tags: [ reverse-proxy, web ] } #
     # - { role: zion.mediaserver, tags: mediaserver }
