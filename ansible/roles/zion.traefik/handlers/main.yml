@@ -9,3 +9,5 @@
     restarted: yes
     services:
       - traefik
+  vars:
+    ansible_python_interpreter:  "{{ '/usr/bin/env python-docker' }}"

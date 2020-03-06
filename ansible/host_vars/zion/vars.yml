@@ -7,6 +7,9 @@ apt-packages:
 
 docker_is_ipv6: no
 docker_address_pool: "172.16.0.0/12"
+docker__default_daemon_json: |
+  "iptables": false,
+  "log-driver": "journald"
 
 vpn_private_ip: 10.10.10.1
 wireguard_private_ip: "{{ vpn_private_ip }}"
