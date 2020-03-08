@@ -1,0 +1,40 @@
+---
+- name: Create Pomerium user and group
+  block:
+    - group:
+        name: pomerium
+        state: present
+        system: yes
+    - user:
+        name: pomerium
+        system: yes
+        create_home: no
+        password: "!"
+        group: pomerium
+
+- name: Create Pomerium configuration directory
+  file:
+    path: "{{ pomerium_config_folder }}"
+    state: directory
+    group: pomerium
+    user: pomerium
+    mode: 0755
+
+- name: Copy Pomerium configuration
+  template:
+    src: config.yml.j2
+    dest: "{{ pomerium_config_folder }}/config.yaml"
+    mode: 0400
+    owner: pomerium
+    group: pomerium
+  no_log: yes
+
+- name: Copy Pomerium docker-compose
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ pomerium_config_folder }}/docker_compose.yml"
+    mode: 0400
+    owner: pomerium
+    group: pomerium
+  no_log: yes
+  notify: reload pomerium

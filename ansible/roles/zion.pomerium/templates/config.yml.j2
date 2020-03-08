@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+address: ":443"
+pomerium_debug: true
+service: all
+log_level: info
+
+cookies:
+  cookie_domain: "{{ pomerium_cookie_domain }}"
+  cookie_secure: true
+  cookie_http_only: true
+
+forward_auth_url: "{{ pomerium_forward_url }}"
+
+authenticate_service_url: "{{ pomerium_url }}"
+
+{% if pomerium_prometheus_enabled %}
+metrics_address: "{{ pomerium_prometheus_address }}"
+{% endif %}
+
+policy:

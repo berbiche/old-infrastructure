@@ -1,0 +1,9 @@
+---
+- name: reload pomerium
+  docker_service:
+    project_name: pomerium
+    project_src: "{{ pomerium_config_folder }}"
+    state: present
+    restarted: yes
+    # Update the image when restarting
+    pull: yes

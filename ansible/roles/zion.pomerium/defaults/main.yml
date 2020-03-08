@@ -1,0 +1,6 @@
+pomerium_config_folder: ""
+pomerium_forward_url: ""
+pomerium_url: ""
+pomerium_prometheus_enabled: yes
+pomerium_prometheus_address: ":9091"
+pomerium_cookie_domain: ""
