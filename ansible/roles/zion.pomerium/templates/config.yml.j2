@@ -5,17 +5,39 @@ pomerium_debug: true
 service: all
 log_level: info
 
-cookies:
-  cookie_domain: "{{ pomerium_cookie_domain }}"
-  cookie_secure: true
-  cookie_http_only: true
+# Pomerium services to run
+# proxy: handle the authentification of another service
+services: "authenticate"
 
+certificate_file: "/pomerium/server.cer"
+certificate_key_file: "/pomerium/server.key"
+
+cookie_name: "__session__"
+cookie_domain: "{{ pomerium_cookie_domain }}"
+cookie_secure: true
+cookie_http_only: true
+
+# Requires the `services` key to be configured with "authenticate" support
 forward_auth_url: "{{ pomerium_forward_url }}"
-
 authenticate_service_url: "{{ pomerium_url }}"
+authorize_server_url: "https://localhost:5443"
 
 {% if pomerium_prometheus_enabled %}
 metrics_address: "{{ pomerium_prometheus_address }}"
 {% endif %}
 
-# policy:
+idp_provider: "google"
+idp_provider_url: "https://accounts.google.com"
+
+policy:
+  - from: "https://traefik.{{ ansible_facts['domain'] }}"
+    to: "https://traefik.{{ ansible_facts['domain'] }}"
+    cors_allow_preflight: true
+    preserve_host_header: true
+    allowed_users: {{ pomerium_admin_users | to_json }}
+
+  - from: "https://{{ ansible_facts['domain'] }}"
+    to: "https://{{ ansible_facts['domain'] }}"
+    cors_allow_preflight: true
+    preserve_host_header: true
+    allowed_users: {{ pomerium_admin_users | to_json }}

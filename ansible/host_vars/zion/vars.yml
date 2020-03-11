@@ -24,4 +24,5 @@ traefik_cert_main: "*.tq.rs"
 traefik_cert_sans:
   - "tq.rs"
 
+pomerium_config_folder: "/srv/pomerium"
 letsencrypt_staging: False

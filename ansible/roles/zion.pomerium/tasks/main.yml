@@ -29,6 +29,27 @@
     group: pomerium
   no_log: yes
 
+- name: Copy Pomerium encrypted certificate
+  copy:
+    src: server.key
+    dest: "{{ pomerium_config_folder }}/server.key"
+    decrypt: yes
+    backup: no
+    mode: 0400
+    owner: pomerium
+    group: pomerium
+  no_log: yes
+
+- name: Copy Pomerium certificate public key
+  copy:
+    src: server.cer
+    dest: "{{ pomerium_config_folder }}/server.cer"
+    backup: no
+    mode: 0400
+    owner: pomerium
+    group: pomerium
+  no_log: yes
+
 - name: Copy Pomerium docker-compose
   template:
     src: docker-compose.yml.j2
