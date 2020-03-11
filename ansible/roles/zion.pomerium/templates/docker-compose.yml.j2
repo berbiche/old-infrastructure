@@ -1,0 +1,39 @@
+# {{ ansible_managed }}
+---
+version: '3.7'
+
+services:
+  pomerium:
+    image: '{{ pomerium_image_version }}'
+    container_name: pomerium
+    restart: always
+    environment:
+      COOKIE_SECRET: '{{ pomerium_cookie_secret }}'
+      IDP_CLIENT_SECRET: '{{ pomerium_idp_client_secret }}'
+      IDP_CLIENT_ID: '{{ pomerium_idp_client_id }}'
+    networks:
+      - '{{ traefik_docker_network }}'
+    volumes:
+      - ./config.yml:/pomerium/config.yaml:ro
+      - ./server.key:/pomerium/server.key:ro
+      - ./server.cer:/pomerium/server.cer:ro
+    labels:
+      traefik.enable: true
+      traefik.dashboard.backend: pomerium
+      traefik.dashboard.frontend.rule: 'Host: {{ pomerium_auth_url }}'
+      traefik.dashboard.port: 80
+      traefik.dashboard.frontend.whiteList.XForwardedFor: true
+      {# Security headers #}
+      traefik.dashboard.frontend.headers.frameDeny: true
+      traefik.dashboard.frontend.headers.browserXSSFilter: true
+      traefik.dashboard.frontend.headers.isDevelopment: false
+      traefik.dashboard.frontend.headers.forceSTSHeader: true
+      traefik.dashboard.frontend.headers.STSPreload: true
+      traefik.dashboard.frontend.headers.STSSeconds: 31536000
+      traefik.dashboard.frontend.headers.referrerPolicy: same-origin
+      {# End security headers #}
+
+
+networks:
+  {{ traefik_docker_network }}:
+    external: true
