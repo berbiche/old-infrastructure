@@ -77,15 +77,23 @@ defaultEntryPoints = ["http", "https"]
 
   [entryPoints.dashboard]
     address = ":8080"
-    [entryPoints.dashboard.whiteList]
-{% if vpn_private_ip %}
-      sourceRange = ["127.0.0.1", "{{ vpn_private_ip }}", "192.168.0.0/24"]
+
+{% if not pomerium_enabled %}
+    [entryPoints.dashboard.auth]
+      [entryPoints.dashboard.auth.forward]
+        address = "{{ pomerium_forward_url }}"
+        authResponseHeaders = ["X-Forwarded-User"]
 {% else %}
+    [entryPoints.dashboard.whiteList]
+  {% if vpn_private_ip %}
+      sourceRange = ["127.0.0.1", "{{ vpn_private_ip }}", "192.168.0.0/24"]
+  {% else %}
       sourceRange = ["127.0.0.1", "192.168.0.0/24"]
-{% endif %}
+  {% endif %}
     [entryPoints.dashboard.auth]
       [entryPoints.dashboard.auth.basic]
         users = {{ traefik_admin_users | to_json }}
+{% endif %}
      
 
 # Automatic renewal of https certs with Let's Encrypt

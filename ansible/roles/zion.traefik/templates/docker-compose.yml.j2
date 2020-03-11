@@ -8,7 +8,7 @@ services:
     container_name: traefik
     restart: always
     environment:
-      # Let's Encrypt cloudflare provider
+      # Lets Encrypt cloudflare provider
       CF_API_EMAIL: '{{ cloudflare_api_email }}'
       CF_API_KEY: '{{ cloudflare_api_key }}'
     domainname: '{{ ansible_facts['domain'] }}'
@@ -30,10 +30,15 @@ services:
       traefik.dashboard.frontend.rule: 'Host: traefik.{{ ansible_facts['domain'] }}'
       traefik.dashboard.port: 8080
       {# Only accessible from private network #}
-{% if vpn_private_ip %}
-      traefik.dashboard.frontend.whiteList.sourceRange: '127.0.0.1, {{ vpn_private_ip }}, 192.168.0.0/24'
+{% if pomerium_enabled %}
+      traefik.dashboard.frontend.auth.forward.address: 'https://{{ pomerium_forward_url }}'
+      traefik.dashboard.frontend.auth.forward.authResponseHeaders: 'X-Forwarded-User'
 {% else %}
+  {% if vpn_private_ip %}
+      traefik.dashboard.frontend.whiteList.sourceRange: '127.0.0.1, {{ vpn_private_ip }}, 192.168.0.0/24'
+  {% else %}
       traefik.dashboard.frontend.whiteList.sourceRange: '127.0.0.1, 192.168.0.0/24'
+  {% endif %}
 {% endif %}
       traefik.dashboard.frontend.whiteList.XForwardedFor: true
       {# Security headers #}
