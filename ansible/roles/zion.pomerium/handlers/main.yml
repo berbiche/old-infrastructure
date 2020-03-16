@@ -7,3 +7,5 @@
     restarted: yes
     # Update the image when restarting
     pull: yes
+  vars:
+    ansible_python_interpreter:  "{{ '/usr/bin/env python-docker' }}"
