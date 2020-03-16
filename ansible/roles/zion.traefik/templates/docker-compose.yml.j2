@@ -1,3 +1,23 @@
+#jinja2:lstrip_blocks: True
+{% macro pomerium_auth(frontend, indentlevel) %}
+  {% if pomerium_enabled == False %}
+    {% filter indent(width=indentlevel) %}
+traefik.{{frontend}}.frontend.auth.forward.address: '{{ pomerium_forward_url }}'
+traefik.{{frontend}}.frontend.auth.forward.authResponseHeaders: 'X-Forwarded-User'
+    {% endfilter %}
+  {% else %}
+    {% if vpn_private_ip %}
+      {% filter indent(width=indentlevel) %}
+traefik.{{frontend}}.frontend.whiteList.sourceRange: '127.0.0.1, {{vpn_private_ip}}, 192.168.0.0/24'
+      {% endfilter %}
+    {% else %}
+      {% filter indent(width=indentlevel) %}
+traefik.{{frontend}}.frontend.whiteList.sourceRange: '127.0.0.1, 192.168.0.0/24'
+      {% endfilter %}
+    {% endif %}
+  {% endif %}
+{%- endmacro %}
+
 # {{ ansible_managed }}
 ---
 version: '3.7'
@@ -12,7 +32,7 @@ services:
       CF_API_EMAIL: '{{ cloudflare_api_email }}'
       CF_API_KEY: '{{ cloudflare_api_key }}'
     domainname: '{{ ansible_facts['domain'] }}'
-    {# Network mode has to be host to have the right ip address #}
+{# Network mode has to be host to have the right ip address #}
     network_mode: host
     ports:
       - '0.0.0.0:80:80'
@@ -30,16 +50,7 @@ services:
       traefik.dashboard.frontend.rule: 'Host: traefik.{{ ansible_facts['domain'] }}'
       traefik.dashboard.port: 8080
       {# Only accessible from private network #}
-{% if pomerium_enabled %}
-      traefik.dashboard.frontend.auth.forward.address: 'https://{{ pomerium_forward_url }}'
-      traefik.dashboard.frontend.auth.forward.authResponseHeaders: 'X-Forwarded-User'
-{% else %}
-  {% if vpn_private_ip %}
-      traefik.dashboard.frontend.whiteList.sourceRange: '127.0.0.1, {{ vpn_private_ip }}, 192.168.0.0/24'
-  {% else %}
-      traefik.dashboard.frontend.whiteList.sourceRange: '127.0.0.1, 192.168.0.0/24'
-  {% endif %}
-{% endif %}
+      {{ pomerium_auth("dashboard", 6) }}
       traefik.dashboard.frontend.whiteList.XForwardedFor: true
       {# Security headers #}
       traefik.dashboard.frontend.headers.frameDeny: true
@@ -61,20 +72,16 @@ services:
       traefik.backend: whoami
       traefik.frontend.rule: 'Host: whoami.{{ ansible_facts['domain'] }}'
       # Only accessible from private network
-{% if vpn_private_ip %}
-      traefik.frontend.whiteList.sourceRange: '127.0.0.1, {{ vpn_private_ip }}, 192.168.0.0/24'
-{% else %}
-      traefik.frontend.whiteList.sourceRange: '127.0.0.1, 192.168.0.0/24'
-{% endif %}
-      # Security headers
-      traefik.frontend.headers.frameDeny: true
-      traefik.frontend.headers.browserXSSFilter: true
-      traefik.frontend.headers.isDevelopment: false
-      traefik.frontend.headers.forceSTSHeader: true
-      traefik.frontend.headers.STSPreload: true
-      traefik.frontend.headers.STSSeconds: 31536000
-      traefik.frontend.headers.referrerPolicy: same-origin
-      # End security headers
+      {{ pomerium_auth("whoami", 6) }}
+      {# Security headers #}
+      traefik.whoami.frontend.headers.frameDeny: true
+      traefik.whoami.frontend.headers.browserXSSFilter: true
+      traefik.whoami.frontend.headers.isDevelopment: false
+      traefik.whoami.frontend.headers.forceSTSHeader: true
+      traefik.whoami.frontend.headers.STSPreload: true
+      traefik.whoami.frontend.headers.STSSeconds: 31536000
+      traefik.whoami.frontend.headers.referrerPolicy: same-origin
+      {# End security headers #}
     networks:
       - {{ traefik_docker_network }}
 
