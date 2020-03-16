@@ -28,12 +28,14 @@ traefik_cert_sans:
 pomerium_enabled: yes
 pomerium_config_folder: "/srv/pomerium"
 pomerium_image_version: "pomerium/pomerium:latest"
-pomerium_forward_url: "auth.tq.rs"
-pomerium_url: "auth.tq.rs"
+pomerium_forward_url: "http://pomerium"
+pomerium_url: "https://auth.tq.rs"
 pomerium_prometheus_enabled: yes
 pomerium_prometheus_address: ":9091"
 pomerium_cookie_domain: "tq.rs"
 pomerium_cookie_secret: "{{ vault_pomerium_cookie_secret }}"
+pomerium_shared_secret: "{{ vault_pomerium_shared_secret }}"
+pomerium_idp_client_id: "{{ vault_pomerium_idp_client_id }}"
 pomerium_idp_client_secret: "{{ vault_pomerium_idp_client_secret }}"
 pomerium_allowed_users: "{{ vault_pomerium_admin_users }}"
 

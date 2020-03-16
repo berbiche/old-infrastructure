@@ -1,13 +1,16 @@
 # {{ ansible_managed }}
 
-address: ":443"
+address: ":80"
 pomerium_debug: true
-service: all
 log_level: info
+# Pomerium
+insecure_server: true
+shared_secret: "{{ pomerium_shared_secret }}"
 
 # Pomerium services to run
 # proxy: handle the authentification of another service
 services: "authenticate"
+
 
 # Path for the certificates within the docker container
 certificate_file: "/pomerium/server.cer"
@@ -15,6 +18,7 @@ certificate_key_file: "/pomerium/server.key"
 
 cookie_name: "__session__"
 cookie_domain: "{{ pomerium_cookie_domain }}"
+cookie_secret: "{{ pomerium_cookie_secret }}"
 cookie_secure: true
 cookie_http_only: true
 
