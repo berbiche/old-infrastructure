@@ -3,11 +3,8 @@
   docker_service:
     project_name: traefik
     project_src: "{{ traefik_config_folder }}"
-    files:
-      - docker-compose.yml
     state: present
     restarted: yes
-    services:
-      - traefik
+    pull: yes
   vars:
     ansible_python_interpreter:  "{{ '/usr/bin/env python-docker' }}"
