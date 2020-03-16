@@ -12,6 +12,6 @@ mkShell {
     ${ansible_2_7}/bin/ansible-playbook --version
     ${ansible_2_7}/bin/ansible-galaxy install -r ansible/roles.yml 2&>/dev/null
 
-    ANSIBLE_VAULT_PASSWORD_FILE=$HOME/.ssh/vault_key_file
+    export ANSIBLE_VAULT_PASSWORD_FILE=$HOME/.ssh/vault_key_file
   '';
 }
