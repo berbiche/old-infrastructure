@@ -17,7 +17,7 @@
     path: "{{ pomerium_config_folder }}"
     state: directory
     group: pomerium
-    user: pomerium
+    owner: pomerium
     mode: 0755
 
 - name: Copy Pomerium configuration
@@ -29,7 +29,7 @@
     group: pomerium
   no_log: yes
 
-- name: Copy Pomerium encrypted certificate
+- name: Copy Pomerium encrypted private key
   copy:
     src: server.key
     dest: "{{ pomerium_config_folder }}/server.key"
@@ -53,7 +53,7 @@
 - name: Copy Pomerium docker-compose
   template:
     src: docker-compose.yml.j2
-    dest: "{{ pomerium_config_folder }}/docker_compose.yml"
+    dest: "{{ pomerium_config_folder }}/docker-compose.yml"
     mode: 0400
     owner: pomerium
     group: pomerium

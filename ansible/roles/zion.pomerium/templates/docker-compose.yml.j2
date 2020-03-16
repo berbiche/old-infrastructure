@@ -14,7 +14,7 @@ services:
     networks:
       - '{{ traefik_docker_network }}'
     volumes:
-      - ./config.yml:/pomerium/config.yaml:ro
+      - ./config.yaml:/pomerium/config.yaml:ro
       - ./server.key:/pomerium/server.key:ro
       - ./server.cer:/pomerium/server.cer:ro
     labels:
