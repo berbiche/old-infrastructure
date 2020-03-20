@@ -1,9 +1,10 @@
 #jinja2:lstrip_blocks: True
-{% macro pomerium_auth(frontend, indentlevel) %}
-  {% if pomerium_enabled == False %}
+{% macro pomerium_auth(frontend, service, indentlevel) %}
+  {% if pomerium_enabled %}
     {% filter indent(width=indentlevel) %}
-traefik.{{frontend}}.frontend.auth.forward.address: '{{ pomerium_forward_url }}'
-traefik.{{frontend}}.frontend.auth.forward.authResponseHeaders: 'X-Forwarded-User'
+traefik.{{frontend}}.frontend.auth.forward.address: '{{ pomerium_forward_url }}/?uri=https://{{ service }}'
+traefik.{{frontend}}.frontend.auth.forward.authResponseHeaders: 'x-pomerium-authenticated-user-email,x-pomerium-authenticated-user-id,x-pomerium-authenticated-user-groups,x-pomerium-jwt-assertion'
+traefik.{{frontend}}.frontend.auth.forward.trustForwardHeader: true
     {% endfilter %}
   {% else %}
     {% if vpn_private_ip %}
@@ -17,6 +18,9 @@ traefik.{{frontend}}.frontend.whiteList.sourceRange: '127.0.0.1, 192.168.0.0/24'
     {% endif %}
   {% endif %}
 {%- endmacro %}
+
+{% set traefik_host = "traefik." + ansible_facts['domain'] %}
+{% set whoami_host = "whoami." + ansible_facts['domain'] %}
 
 # {{ ansible_managed }}
 ---
@@ -47,10 +51,10 @@ services:
     labels:
       traefik.enable: true
       traefik.dashboard.backend: traefik
-      traefik.dashboard.frontend.rule: 'Host: traefik.{{ ansible_facts['domain'] }}'
+      traefik.dashboard.frontend.rule: 'Host: {{ traefik_host }}'
       traefik.dashboard.port: 8080
       {# Only accessible from private network #}
-      {{ pomerium_auth("dashboard", 6) }}
+      {{ pomerium_auth("dashboard", traefik_host, 6) }}
       traefik.dashboard.frontend.whiteList.XForwardedFor: true
       {# Security headers #}
       traefik.dashboard.frontend.headers.frameDeny: true
@@ -68,11 +72,11 @@ services:
     restart: unless-stopped
     labels:
       traefik.enable: true
-      traefik.docker.network: '{{ traefik_docker_network }}'
-      traefik.backend: whoami
-      traefik.frontend.rule: 'Host: whoami.{{ ansible_facts['domain'] }}'
+      traefik.whoami.docker.network: '{{ traefik_docker_network }}'
+      traefik.whoami.backend: whoami
+      traefik.whoami.frontend.rule: 'Host: {{ whoami_host }}'
       # Only accessible from private network
-      {{ pomerium_auth("whoami", 6) }}
+      {{ pomerium_auth("whoami", whoami_host, 6) }}
       {# Security headers #}
       traefik.whoami.frontend.headers.frameDeny: true
       traefik.whoami.frontend.headers.browserXSSFilter: true

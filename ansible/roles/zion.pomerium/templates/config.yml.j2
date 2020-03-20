@@ -1,15 +1,14 @@
 # {{ ansible_managed }}
 
 address: ":80"
-pomerium_debug: true
+pomerium_debug: false
 log_level: info
 # Pomerium
 insecure_server: true
 shared_secret: "{{ pomerium_shared_secret }}"
 
 # Pomerium services to run
-# proxy: handle the authentification of another service
-services: "authenticate"
+services: "all"
 
 
 # Path for the certificates within the docker container
@@ -24,8 +23,7 @@ cookie_http_only: true
 
 # Requires the `services` key to be configured with "authenticate" support
 forward_auth_url: "{{ pomerium_forward_url }}"
-authenticate_service_url: "{{ pomerium_url }}"
-authorize_server_url: "https://localhost:5443"
+authenticate_service_url: "{{ pomerium_authenticate_url }}"
 
 {% if pomerium_prometheus_enabled %}
 metrics_address: "{{ pomerium_prometheus_address }}"
@@ -38,11 +36,14 @@ policy:
   - from: "https://traefik.{{ ansible_facts['domain'] }}"
     to: "https://traefik.{{ ansible_facts['domain'] }}"
     cors_allow_preflight: true
-    preserve_host_header: true
+    allowed_users: {{ pomerium_allowed_users | to_json }}
+
+  - from: "https://whoami.{{ ansible_facts['domain'] }}"
+    to: "https://whoami.{{ ansible_facts['domain'] }}"
+    cors_allow_preflight: true
     allowed_users: {{ pomerium_allowed_users | to_json }}
 
   - from: "https://{{ ansible_facts['domain'] }}"
     to: "https://{{ ansible_facts['domain'] }}"
     cors_allow_preflight: true
-    preserve_host_header: true
     allowed_users: {{ pomerium_allowed_users | to_json }}

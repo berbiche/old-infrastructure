@@ -13,4 +13,5 @@
     # - { role: zion.docker, tags: docker }
     # - { role: zion.dns, tags: dns }
     - { role: zion.traefik, tags: [ reverse-proxy, web ] } #
+    - { role: zion.pomerium, tags: [ reverse-proxy ] }
     # - { role: zion.mediaserver, tags: mediaserver }

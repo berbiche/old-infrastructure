@@ -20,19 +20,30 @@ services:
       - ./server.cer:/pomerium/server.cer:ro
     labels:
       traefik.enable: true
-      traefik.pomerium.backend: pomerium
-      traefik.pomerium.frontend.rule: 'Host: auth.{{ ansible_facts['domains'] }}'
-      traefik.pomerium.port: 80
-      {# # Forward the X-Forwarded-For header to Pomerium  #}
-      {# traefik.pomerium.frontend.whiteList.XForwardedFor: true  #}
+      traefik.pomerium-forward.frontend.rule: 'Host: {{ pomerium_forward_url | replace("https://", "") }}'
+      traefik.pomerium-forward.port: 80
+      traefik.pomerium-forward.protocol: http
       {# Security headers #}
-      traefik.pomerium.frontend.headers.frameDeny: true
-      traefik.pomerium.frontend.headers.browserXSSFilter: true
-      traefik.pomerium.frontend.headers.isDevelopment: false
-      traefik.pomerium.frontend.headers.forceSTSHeader: true
-      traefik.pomerium.frontend.headers.STSPreload: true
-      traefik.pomerium.frontend.headers.STSSeconds: 31536000
-      traefik.pomerium.frontend.headers.referrerPolicy: same-origin
+      traefik.pomerium-forward.frontend.headers.frameDeny: true
+      traefik.pomerium-forward.frontend.headers.browserXSSFilter: true
+      traefik.pomerium-forward.frontend.headers.isDevelopment: false
+      traefik.pomerium-forward.frontend.headers.forceSTSHeader: true
+      traefik.pomerium-forward.frontend.headers.STSPreload: true
+      traefik.pomerium-forward.frontend.headers.STSSeconds: 31536000
+      traefik.pomerium-forward.frontend.headers.referrerPolicy: same-origin
+      {# End security -forwardheaders #}
+
+      traefik.pomerium-auth.frontend.rule: 'Host: {{ pomerium_authenticate_url | replace("https://", "") }}'
+      traefik.pomerium-auth.port: 80
+      traefik.pomerium-auth.protocol: http
+      {# Security headers #}
+      traefik.pomerium-auth.frontend.headers.frameDeny: true
+      traefik.pomerium-auth.frontend.headers.browserXSSFilter: true
+      traefik.pomerium-auth.frontend.headers.isDevelopment: false
+      traefik.pomerium-auth.frontend.headers.forceSTSHeader: true
+      traefik.pomerium-auth.frontend.headers.STSPreload: true
+      traefik.pomerium-auth.frontend.headers.STSSeconds: 31536000
+      traefik.pomerium-auth.frontend.headers.referrerPolicy: same-origin
       {# End security headers #}
 
 
