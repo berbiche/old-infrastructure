@@ -1,28 +1,58 @@
 ---
-- name: Create qbittorrent user and group
+- name: Stop qbittorrent server
+  docker_service:
+    project_name: qbittorrent
+    project_src: "{{ qbittorrent_folder }}"
+    stopped: yes
+    services:
+      - qbittorrent
+  vars:
+    ansible_python_interpreter:  "{{ '/usr/bin/env python-docker' }}"
+
+- name: Create mediaserver user and group
   block:
-    - group:
-        name: qbittorrent
+    - name: Create mediaserver group
+      group:
+        name: "{{ mediaserver_user }}"
         state: present
         system: yes
       register: qbittorrent_group
-    - user:
-        name: qbittorrent
-        group: qbittorrent
+    - name: Create mediaserver user
+      user:
+        name: "{{ mediaserver_user }}"
+        group: "{{ mediaserver_group }}"
         state: present
         system: yes
         create_home: no
         update_password: on_create
         password: '!'
       register: qbittorrent_user
+    - name: Delete old qbittorrent user
+      user:
+        name: qbittorrent
+        state: absent
+        system: yes
+    - name: Delete old qbittorrent group
+      group:
+        name: qbittorrent
+        state: absent
+        system: yes
 
 - name: Create qbittorrent configuration directory
   file:
     path: "{{ qbittorrent_folder }}"
     state: directory
-    owner: qbittorrent
-    group: qbittorrent
+    owner: "{{ mediaserver_user }}"
+    group: "{{ mediaserver_group }}"
     mode: 0755
+
+- name: Set ownership on qbittorrent configuration directory recursively
+  file:
+    path: "{{ qbittorrent_folder }}"
+    state: directory
+    owner: "{{ mediaserver_user }}"
+    group: "{{ mediaserver_group }}"
+    recurse: yes
 
 - name: Add qbittorrent UFW rules
   ufw:
@@ -41,7 +71,7 @@
     src: docker-compose.yml.j2
     dest: "{{ qbittorrent_folder }}/docker-compose.yml"
     mode: 0400
-    owner: qbittorrent
-    group: qbittorrent
+    owner: "{{ mediaserver_user }}"
+    group: "{{ mediaserver_group }}"
   no_log: no
   notify: reload qbittorrent

@@ -46,8 +46,11 @@ pomerium_allowed_users: "{{ vault_pomerium_admin_users }}"
 
 letsencrypt_staging: False
 
+mediaserver_user: "mediaserver"
+mediaserver_group: "mediaserver"
+
 qbittorrent_folder: "/srv/qbittorrent"
 qbittorrent_config_folder: "{{qbittorrent_folder}}/config"
-qbittorrent_download_folder: "{{ metacortex }}/"
+qbittorrent_download_folder: "{{ metacortex }}/torrents"
 qbittorrent_port: "31337"
 qbittorrent_docker_network: "mediaserver"
