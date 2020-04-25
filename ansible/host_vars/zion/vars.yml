@@ -2,8 +2,12 @@
 login_banner: |
   Property of Nicolas Berbiche <nicolas@normie.dev>
 
+timezone: America/Montreal
+
 apt-packages:
   - apt-transport-https
+
+metacortex: "/mnt/metacortex"
 
 docker_is_ipv6: no
 docker_address_pool: "172.16.0.0/12"
@@ -42,3 +46,5 @@ pomerium_allowed_users: "{{ vault_pomerium_admin_users }}"
 letsencrypt_staging: False
 
 qbittorrent_config_folder: "/srv/qbittorrent"
+qbittorrent_download_folder: "{{ metacortex }}/"
+qbittorrent_port: "31137"

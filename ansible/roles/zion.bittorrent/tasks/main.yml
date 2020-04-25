@@ -5,6 +5,7 @@
         name: qbittorrent
         state: present
         system: yes
+      register: qbittorrent_group
     - user:
         name: qbittorrent
         group: qbittorrent
@@ -13,6 +14,7 @@
         create_home: no
         update_password: on_create
         password: '!'
+      register: qbittorrent_user
 
 - name: Create qbittorrent configuration directory
   file:

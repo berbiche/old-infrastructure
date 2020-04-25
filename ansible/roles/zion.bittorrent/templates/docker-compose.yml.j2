@@ -1,0 +1,36 @@
+# {{ ansible_managed }}
+---
+version: '3.7'
+
+services:
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    container_name: qbittorrent
+    restart: unless-stopped
+    # Required
+    network_mode: host
+    ports:
+      - "0.0.0.0:{{ qbittorrent_port }}:31337"
+    environment:
+      PUID: "{{ qbittorrent_group.gid }}"
+      PGID: "{{ qbittorrent_user.uid }}"
+      TZ: "{{ timezone }}"
+      WEBUI_PORT: 8080
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "{{ qbittorrent_config_folder }}:/config"
+      - "{{ qbittorrent_download_folder }}:/downloads"
+    labels:
+      traefik.enable: true
+      traefik.qbittorrent.backend: qbittorrent
+      traefik.qbittorrent.port: 8080
+      traefik.qbittorrent.frontend.rule: 'Host: qbittorrent.{{ ansible_facts['domain'] }}'
+      {# Security headers #}
+      traefik.qbittorrent.frontend.headers.frameDeny: true
+      traefik.qbittorrent.frontend.headers.browserXSSFilter: true
+      traefik.qbittorrent.frontend.headers.isDevelopment: false
+      traefik.qbittorrent.frontend.headers.forceSTSHeader: true
+      traefik.qbittorrent.frontend.headers.STSPreload: true
+      traefik.qbittorrent.frontend.headers.STSSeconds: 31536000
+      traefik.qbittorrent.frontend.headers.referrerPolicy: same-origin
+      {# End security headers #}
