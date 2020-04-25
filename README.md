@@ -11,7 +11,7 @@ To run a specific host:
 
 ``` sh
 # Unlock bitwarden instance
-eval "$(bw login | grep -oP '(export BW_SESSION=".*")')"
+eval "$(bw unlock | grep -oP '(export BW_SESSION=".*")')"
 # Run specific host (zion in this case)
 ansible-playbook zion.yml
 ```
