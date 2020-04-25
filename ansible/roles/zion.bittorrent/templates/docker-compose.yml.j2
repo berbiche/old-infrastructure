@@ -1,3 +1,4 @@
+#jinja2:lstrip_blocks: True
 # {{ ansible_managed }}
 ---
 version: '3.7'
@@ -8,12 +9,13 @@ services:
     container_name: qbittorrent
     restart: unless-stopped
     # Required
-    network_mode: host
+    networks:
+      - "{{ qbittorrent_docker_network }}"
     ports:
       - "0.0.0.0:{{ qbittorrent_port }}:31337"
     environment:
-      PUID: "{{ qbittorrent_group.gid }}"
-      PGID: "{{ qbittorrent_user.uid }}"
+      PUID: "{{ qbittorrent_user.uid }}"
+      PGID: "{{ qbittorrent_group.gid }}"
       TZ: "{{ timezone }}"
       WEBUI_PORT: 8080
     volumes:
@@ -26,6 +28,7 @@ services:
       traefik.qbittorrent.port: 8080
       traefik.qbittorrent.frontend.rule: 'Host: qbittorrent.{{ ansible_facts['domain'] }}'
       {# Security headers #}
+      traefik.qbittorrent.frontend.whiteList.sourceRange: '127.0.0.1, {{vpn_private_ip}}, 192.168.0.0/24, 172.16.0.0/12'
       traefik.qbittorrent.frontend.headers.frameDeny: true
       traefik.qbittorrent.frontend.headers.browserXSSFilter: true
       traefik.qbittorrent.frontend.headers.isDevelopment: false
@@ -34,3 +37,7 @@ services:
       traefik.qbittorrent.frontend.headers.STSSeconds: 31536000
       traefik.qbittorrent.frontend.headers.referrerPolicy: same-origin
       {# End security headers #}
+
+networks:
+  "{{ qbittorrent_docker_network }}":
+    external: true

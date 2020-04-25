@@ -2,6 +2,7 @@
 login_banner: |
   Property of Nicolas Berbiche <nicolas@normie.dev>
 
+primary_interface: eno1
 timezone: America/Montreal
 
 apt-packages:
@@ -45,6 +46,8 @@ pomerium_allowed_users: "{{ vault_pomerium_admin_users }}"
 
 letsencrypt_staging: False
 
-qbittorrent_config_folder: "/srv/qbittorrent"
+qbittorrent_folder: "/srv/qbittorrent"
+qbittorrent_config_folder: "{{qbittorrent_folder}}/config"
 qbittorrent_download_folder: "{{ metacortex }}/"
-qbittorrent_port: "31137"
+qbittorrent_port: "31337"
+qbittorrent_docker_network: "mediaserver"

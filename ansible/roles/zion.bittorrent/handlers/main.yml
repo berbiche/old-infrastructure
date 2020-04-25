@@ -2,7 +2,7 @@
 - name: reload qbittorrent
   docker_service:
     project_name: qbittorrent
-    project_src: "{{ qbittorrent_config_folder }}"
+    project_src: "{{ qbittorrent_folder }}"
     files:
       - docker-compose.yml
     state: present

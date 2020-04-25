@@ -18,18 +18,30 @@
 
 - name: Create qbittorrent configuration directory
   file:
-    path: "{{ qbittorrent_config_folder }}"
+    path: "{{ qbittorrent_folder }}"
     state: directory
     owner: qbittorrent
     group: qbittorrent
     mode: 0755
 
+- name: Add qbittorrent UFW rules
+  ufw:
+    rule: allow
+    port: "{{ qbittorrent_port }}"
+    interface: "{{ primary_interface }}"
+    proto: "{{ item }}"
+    direction: in
+    log: no
+    comment: Allow qBittorrent trafic
+    delete: no
+  loop: [udp, tcp]
+
 - name: Copy qbittorrent docker-compose configuration
   template:
     src: docker-compose.yml.j2
-    dest: "{{ qbittorrent_config_folder }}/docker-compose.yml"
+    dest: "{{ qbittorrent_folder }}/docker-compose.yml"
     mode: 0400
     owner: qbittorrent
     group: qbittorrent
-  no_log: yes
+  no_log: no
   notify: reload qbittorrent
