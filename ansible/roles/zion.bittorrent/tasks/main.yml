@@ -1,0 +1,33 @@
+---
+- name: Create qbittorrent user and group
+  block:
+    - group:
+        name: qbittorrent
+        state: present
+        system: yes
+    - user:
+        name: qbittorrent
+        group: qbittorrent
+        state: present
+        system: yes
+        create_home: no
+        update_password: on_create
+        password: '!'
+
+- name: Create qbittorrent configuration directory
+  file:
+    path: "{{ qbittorrent_config_folder }}"
+    state: directory
+    owner: qbittorrent
+    group: qbittorrent
+    mode: 0755
+
+- name: Copy qbittorrent docker-compose configuration
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ qbittorrent_config_folder }}/docker-compose.yml"
+    mode: 0400
+    owner: qbittorrent
+    group: qbittorrent
+  no_log: yes
+  notify: reload qbittorrent

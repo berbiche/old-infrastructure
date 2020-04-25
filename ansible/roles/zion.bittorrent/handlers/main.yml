@@ -1,0 +1,13 @@
+---
+- name: reload qbittorrent
+  docker_service:
+    project_name: qbittorrent
+    project_src: "{{ qbittorrent_config_folder }}"
+    files:
+      - docker-compose.yml
+    state: present
+    restarted: yes
+    services:
+      - qbittorrent
+  vars:
+    ansible_python_interpreter:  "{{ '/usr/bin/env python-docker' }}"

@@ -40,3 +40,5 @@ pomerium_idp_client_secret: "{{ vault_pomerium_idp_client_secret }}"
 pomerium_allowed_users: "{{ vault_pomerium_admin_users }}"
 
 letsencrypt_staging: False
+
+qbittorrent_config_folder: "/srv/qbittorrent"
