@@ -27,32 +27,17 @@
         update_password: on_create
         password: '!'
       register: qbittorrent_user
-    - name: Delete old qbittorrent user
-      user:
-        name: qbittorrent
-        state: absent
-        system: yes
-    - name: Delete old qbittorrent group
-      group:
-        name: qbittorrent
-        state: absent
-        system: yes
 
-- name: Create qbittorrent configuration directory
+- name: Create qbittorrent directories (config, download)
   file:
-    path: "{{ qbittorrent_folder }}"
+    path: "{{ item }}"
     state: directory
     owner: "{{ mediaserver_user }}"
     group: "{{ mediaserver_group }}"
     mode: 0755
-
-- name: Set ownership on qbittorrent configuration directory recursively
-  file:
-    path: "{{ qbittorrent_folder }}"
-    state: directory
-    owner: "{{ mediaserver_user }}"
-    group: "{{ mediaserver_group }}"
-    recurse: yes
+  loop:
+    - "{{ qbittorrent_folder }}"
+    - "{{ qbittorrent_download_folder }}"
 
 - name: Add qbittorrent UFW rules
   ufw:
