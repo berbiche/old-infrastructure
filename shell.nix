@@ -7,6 +7,7 @@ mkShell {
     git-crypt
     ansible_2_7
     terraform
+    doctl
   ] ++ (with terraform-providers; [
     cloudflare
   ]);

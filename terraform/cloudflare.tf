@@ -21,7 +21,7 @@ resource "cloudflare_zone" "qt_rs" {
 resource "cloudflare_record" "qt_rs_ipv4" {
   zone_id = cloudflare_zone.qt_rs.id
   type    = "A"
-  value   = "178.128.233.67"
+  value   = digitalocean_droplet.dozer.ipv4_address
   name    = "qt.rs."
   proxied = false
 }
@@ -29,7 +29,7 @@ resource "cloudflare_record" "qt_rs_ipv4" {
 resource "cloudflare_record" "dozer_ipv4" {
   zone_id = cloudflare_zone.qt_rs.id
   type    = "A"
-  value   = "178.128.233.67"
+  value   = digitalocean_droplet.dozer.ipv4_address
   name    = "dozer.qt.rs."
   proxied = false
 }
@@ -37,7 +37,7 @@ resource "cloudflare_record" "dozer_ipv4" {
 resource "cloudflare_record" "dozer_ipv6" {
   zone_id = cloudflare_zone.qt_rs.id
   type    = "AAAA"
-  value   = "2604:a880:cad:d0::c8c:c001"
+  value   = digitalocean_droplet.dozer.ipv6_address
   name    = "dozer.qt.rs."
   proxied = false
 }
@@ -45,7 +45,7 @@ resource "cloudflare_record" "dozer_ipv6" {
 resource "cloudflare_record" "qt_rs_ipv6" {
   zone_id = cloudflare_zone.qt_rs.id
   type    = "AAAA"
-  value   = "2604:a880:cad:d0::c8c:c001"
+  value   = digitalocean_droplet.dozer.ipv6_address
   name    = "qt.rs."
   proxied = false
 }
@@ -54,6 +54,6 @@ resource "cloudflare_record" "www" {
   zone_id = cloudflare_zone.qt_rs.id
   type    = "CNAME"
   name    = "www"
-  value   = "qt.rs."
+  value   = "qt.rs"
   proxied = false
 }
