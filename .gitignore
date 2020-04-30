@@ -5,3 +5,12 @@ tmp/
 .env
 unmodified/
 *.retry
+
+# Private Terraform files
+# These files are encrypted using git-crypt so they can "safely"
+# be inluded.
+#secrets.tfvars
+#*.tfstate
+
+# Terraform plugins
+.terraform/
