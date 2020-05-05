@@ -2,6 +2,8 @@
 
 This repository contains all Terraform configuration.
 
+![Graph of the dependencies](./graph.svg)
+
 ## Secrets
 
 Secrets are automatically encrypted/decrypted using `git-crypt`.
@@ -48,4 +50,10 @@ Importing an existing resource (example with Cloudflare):
 
 ```sh
 terraform import -var-file=secrets.tfvars cloudflare_zone.my_resource_in_my_dot_tf cloudflare-zone-id
+```
+
+## Creating a graph of the dependencies
+
+```sh
+terraform graph | dot -Tsvg >graph.svg
 ```

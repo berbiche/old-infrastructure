@@ -8,6 +8,7 @@ mkShell {
     ansible_2_7
     terraform
     doctl
+    graphviz                            # To use with terraform graph
   ] ++ (with terraform-providers; [
     cloudflare
   ]);
