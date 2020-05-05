@@ -22,10 +22,10 @@ terraform init
 terraform refresh -var-file=secrets.tfvars
 ```
 
-3. Hack on and see modifications
+3. Hack on and see modifications (saving the plan to "out-build")
 
 ```sh
-terraform plan -var-file=secrets.tfvars >out-build
+terraform plan -var-file=secrets.tfvars -out out-build
 ```
 
 4. Apply the changes
