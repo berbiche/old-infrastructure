@@ -1,4 +1,6 @@
 ---
+domain: "tq.rs"
+
 login_banner: |
   Property of Nicolas Berbiche <nicolas@normie.dev>
 
@@ -20,24 +22,28 @@ docker__default_daemon_json: |
 vpn_private_ip: 10.10.10.1
 wireguard_private_ip: "{{ vpn_private_ip }}"
 
+cloudflare_ddns_api_token: "{{ vault_cloudflare_ddns_api_token }}"
+cloudflare_ddns_zone: "{{ domain }}"
+cloudflare_ddns_docker_version: "3fcdc6031a615cd939ad0793be598522ce3adfa79773d15d5a7ca955e3cf736c"
+
 traefik_version: "traefik:1.7.20"
 traefik_config_folder: "/srv/traefik"
 traefik_logs_folder: "{{ traefik_config_folder }}/logs"
 traefik_docker_network: "web"
 traefik_admin_users:
   - "nicolas:$2y$10$1kbYjcdCM5f1AccP0PmzZev.FiUJ/MsSXVGtPdlS/3Pl0RC9F.35."
-traefik_cert_main: "*.tq.rs"
+traefik_cert_main: "*.{{ domain }}"
 traefik_cert_sans:
-  - "tq.rs"
+  - "{{ domain }}"
 
 pomerium_enabled: yes
 pomerium_config_folder: "/srv/pomerium"
 pomerium_image_version: "pomerium/pomerium:latest"
-pomerium_forward_url: "https://auth.tq.rs"
-pomerium_authenticate_url: "https://fwdauth.tq.rs"
+pomerium_forward_url: "https://auth.{{ domain }}"
+pomerium_authenticate_url: "https://fwdauth.{{ domain }}"
 pomerium_prometheus_enabled: yes
 pomerium_prometheus_address: ":9091"
-pomerium_cookie_domain: "tq.rs"
+pomerium_cookie_domain: "{{ domain }}"
 pomerium_cookie_secret: "{{ vault_pomerium_cookie_secret }}"
 pomerium_shared_secret: "{{ vault_pomerium_shared_secret }}"
 pomerium_idp_client_id: "{{ vault_pomerium_idp_client_id }}"

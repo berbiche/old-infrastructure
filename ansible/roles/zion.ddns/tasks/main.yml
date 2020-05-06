@@ -1,0 +1,17 @@
+---
+- name: Spawn cloudflare-ddns container
+  docker_container:
+    name: cloudflare-ddns
+    # Date: 2020-04-26
+    image: "oznu/cloudflare-ddns@sha256:{{ cloudflare_ddns_docker_version }}"
+    state: started
+    recreate: yes
+    restart: yes
+    pull: yes
+    memory: "30M"
+    memory_swap: "30M"
+    env:
+      ZONE: "{{ cloudflare_ddns_zone }}"
+      API_KEY: "{{ cloudflare_ddns_api_token }}"
+      PROXIED: "false"
+      DNS_SERVER: "1.1.1.1"
