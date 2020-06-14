@@ -2,16 +2,10 @@
 
 This repository embodies the configuration I use for my home lab and VPS server.
 
+A rewrite (and update) of this configuration is being done using NixOps [here](https://github.com/berbiche/metacortex).
+
 ## Deploying
 
-My secrets are managed with bitwarden and requires the bitwarden-cli executable
-to be available in `$PATH` (`bw` executable).
+My secrets are managed with `git-crypt` and `ansible-vault`.
 
-To run a specific host:
-
-``` sh
-# Unlock bitwarden instance
-eval "$(bw unlock | grep -oP '(export BW_SESSION=".*")')"
-# Run specific host (zion in this case)
-ansible-playbook zion.yml
-```
+The required keys will be necessary to decrypt the repository with `git-crypt` and for `ansible` deployments.
