@@ -1,11 +1,13 @@
 { pkgs ? import <nixpkgs> {} }:
 
 with pkgs;
-
+let
+  #ansible-patched = ansible_2_7.override { };
+in
 mkShell {
   buildInputs = [
     git-crypt
-    ansible_2_7
+    ansible_2_9
     terraform
     doctl
     graphviz                            # To use with terraform graph
