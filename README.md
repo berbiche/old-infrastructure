@@ -1,4 +1,4 @@
-# Infrastructure
+# My old server infrastructure (archived)
 
 This repository embodies the configuration I use for my home lab and VPS server.
 
